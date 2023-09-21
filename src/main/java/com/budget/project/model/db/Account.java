@@ -1,13 +1,12 @@
 package com.budget.project.model.db;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Data
@@ -15,9 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    @Id
-    @GeneratedValue
-    private Long id;
+    @Id @GeneratedValue private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -50,6 +47,4 @@ public class Account {
 
     @OneToMany(mappedBy = "accountFrom")
     private Set<Transaction> transactions = new HashSet<>();
-
-
 }

@@ -2,9 +2,7 @@ package com.budget.project.model.db;
 
 import com.budget.project.model.dto.request.AccountInput;
 import jakarta.persistence.*;
-
 import java.util.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,7 +42,9 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Currency currency;
 
-    @ManyToMany(mappedBy = "accounts", cascade = { CascadeType.DETACH })
+    @ManyToMany(
+            mappedBy = "accounts",
+            cascade = {CascadeType.DETACH})
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "accountFrom")

@@ -1,6 +1,7 @@
 package com.budget.project.model.db;
 
 import jakarta.persistence.*;
+import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,8 +12,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
-
 @Entity
 @Data
 @Table(name = "`user`")
@@ -21,9 +20,7 @@ import java.util.*;
 @AllArgsConstructor
 public class User implements UserDetails {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+    @Id @GeneratedValue private Long id;
 
     @Column(nullable = false)
     private String email;
@@ -38,18 +35,24 @@ public class User implements UserDetails {
     private Settings settings;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "user_account", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
-            @JoinColumn(name = "account_id") })
+    @JoinTable(
+            name = "user_account",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "account_id")})
     List<Account> accounts = new ArrayList<>();
 
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(name = "user_trip", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
-            @JoinColumn(name = "trip_id") })
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "user_trip",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "trip_id")})
     Set<Trip> trips = new HashSet<>();
 
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(name = "user_category", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
-            @JoinColumn(name = "category_id") })
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "user_category",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "category_id")})
     Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
@@ -57,7 +60,6 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

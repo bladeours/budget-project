@@ -3,8 +3,8 @@ package com.budget.project.config;
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
-import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.model.dto.request.AccountInput;
+import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +26,12 @@ public class Bootstrap implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        var authenticationRequest = new AuthenticationRequest("email@email.com",  "123");
+        var authenticationRequest = new AuthenticationRequest("email@email.com", "123");
         System.out.println(authService.register(authenticationRequest).token());
-        var auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.email(), authenticationRequest.password()));
+        var auth =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                authenticationRequest.email(), authenticationRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(auth);
         accountService.createAccount(
                 AccountInput.builder()

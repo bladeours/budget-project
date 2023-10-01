@@ -1,8 +1,10 @@
 package com.budget.project.model.db;
 
+import com.budget.project.model.dto.request.AccountInput;
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,9 +44,24 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Currency currency;
 
-    @ManyToMany(mappedBy = "accounts")
-    private Set<User> users = new HashSet<>();
+    @ManyToMany(mappedBy = "accounts", cascade = { CascadeType.DETACH })
+    private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "accountFrom")
     private Set<Transaction> transactions = new HashSet<>();
+
+    public static Account of(AccountInput accountInput, User user) {
+        return Account.builder()
+                .color(accountInput.color())
+                .accountType(accountInput.accountType())
+                .hash(UUID.randomUUID().toString())
+                .archived(false)
+                .name(accountInput.name())
+                .currency(accountInput.currency())
+                .description(accountInput.description())
+                .parent_id(accountInput.parentId())
+                .balance(accountInput.balance())
+                .users(List.of(user))
+                .build();
+    }
 }

@@ -11,10 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -40,10 +37,10 @@ public class User implements UserDetails {
     @JdbcTypeCode(SqlTypes.JSON)
     private Settings settings;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "user_account", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
             @JoinColumn(name = "account_id") })
-    Set<Account> accounts = new HashSet<>();
+    List<Account> accounts = new ArrayList<>();
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(name = "user_trip", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {

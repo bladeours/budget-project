@@ -1,5 +1,6 @@
 package com.budget.project.security;
 
+import com.budget.project.exception.model.CustomForbiddenEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +23,17 @@ public class securityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        authorizationRequest ->
-                                authorizationRequest
-                                        .requestMatchers("/api/auth/**")
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
+//                                .authorizeHttpRequests(
+//                                        authorizationRequest ->
+//                                                authorizationRequest
+//                                                        .requestMatchers("/api/auth/**", "/graphiql")
+//                                                        .permitAll()
+//                                                        .anyRequest()
+//                                                        .authenticated())
+                .exceptionHandling(
+                        exceptionHandling ->
+                                exceptionHandling.authenticationEntryPoint(
+                                        new CustomForbiddenEntryPoint()))
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

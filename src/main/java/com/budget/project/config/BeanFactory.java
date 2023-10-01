@@ -1,6 +1,6 @@
 package com.budget.project.config;
 
-import com.budget.project.repository.UserRepository;
+import com.budget.project.service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +21,10 @@ public class BeanFactory {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository
-                .findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username ->
+                userRepository
+                        .findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
@@ -40,7 +41,8 @@ public class BeanFactory {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
         return config.getAuthenticationManager();
     }
 }

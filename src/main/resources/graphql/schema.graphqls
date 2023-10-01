@@ -1,0 +1,33 @@
+type Query {
+    getAccounts: [Account]
+}
+
+type Mutation {
+    addAccount(accountInput: AccountInput): Account
+    deleteAccount(hash: ID!): Boolean
+}
+
+type Account {
+    hash: ID!
+    name: String!
+}
+
+input AccountInput{
+    accountType: AccountType!
+    balance: Float!
+    color: String!
+    currency: Currency!
+    description: String
+    name: String
+    parentId: Int
+}
+
+enum Currency {
+    PLN
+    EUR
+}
+
+enum AccountType {
+    REGULAR
+    SAVINGS
+}

@@ -1,8 +1,8 @@
 package com.budget.project.auth.controller;
 
 import com.budget.project.auth.service.AuthService;
-import com.budget.project.model.dto.AuthenticationRequest;
-import com.budget.project.model.dto.AuthenticationResponse;
+import com.budget.project.model.dto.request.AuthenticationRequest;
+import com.budget.project.model.dto.response.AuthenticationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +17,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest request){
+    public ResponseEntity<AuthenticationResponse> register(
+            @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 }

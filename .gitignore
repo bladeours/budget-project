@@ -34,5 +34,6 @@ build/
 
 .mvn/
 
-localdb.mv.db
-localdb.trace.db
+/localdb.mv.db
+/localdb.trace.db
+/localdb.lock.db

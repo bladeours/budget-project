@@ -26,7 +26,7 @@ public class securityConfig {
                 .authorizeHttpRequests(
                         authorizationRequest ->
                                 authorizationRequest
-                                        .requestMatchers("/api/auth/**", "/graphiql")
+                                        .requestMatchers("/api/auth/register","/api/auth/authenticate", "/graphiql")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

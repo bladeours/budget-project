@@ -46,7 +46,7 @@ public class RefreshTokenService {
 
     @Transactional
     public Cookie createRefreshTokenCookieAndRemoveOld() {
-        refreshTokenRepository.deleteByUser(userService.getLoggedUser());
+        this.deleteTokenForLoggedUser();
         RefreshToken refreshToken =
                 refreshTokenRepository.save(
                         RefreshToken.builder()
@@ -55,6 +55,11 @@ public class RefreshTokenService {
                                 .token(UUID.randomUUID().toString())
                                 .build());
         return getCookie(refreshToken.getToken());
+    }
+
+    @Transactional
+    public void deleteTokenForLoggedUser() {
+        refreshTokenRepository.deleteByUser(userService.getLoggedUser());
     }
 
     public Cookie getCookie(String refreshToken) {
@@ -72,5 +77,11 @@ public class RefreshTokenService {
                     "Refresh token was expired. Please make a new signin request",
                     HttpStatus.FORBIDDEN);
         }
+    }
+
+    public Cookie getLogoutCookie() {
+        var cookie = this.getCookie("");
+        cookie.setMaxAge(1);
+        return cookie;
     }
 }

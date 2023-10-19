@@ -5,7 +5,9 @@ import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.AuthenticationRequest;
+import com.budget.project.model.dto.request.CategoryInput;
 import com.budget.project.service.AccountService;
+import com.budget.project.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -23,11 +25,12 @@ public class Bootstrap implements ApplicationRunner {
     private final AuthService authService;
     private final AccountService accountService;
     private final AuthenticationManager authenticationManager;
+    private final CategoryService categoryService;
 
     @Override
     public void run(ApplicationArguments args) {
         var authenticationRequest = new AuthenticationRequest("email@email.com", "123");
-        System.out.println(authService.register(authenticationRequest).token());
+        System.out.println(authService.register(authenticationRequest).jwt());
         var auth =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -48,6 +51,13 @@ public class Bootstrap implements ApplicationRunner {
                         .currency(Currency.PLN)
                         .color("#ffffff")
                         .name("test_2")
+                        .build());
+        categoryService.createCategory(
+                CategoryInput.builder()
+                        .income(false)
+                        .parentId(null)
+                        .color("#ffffff")
+                        .name("category_1")
                         .build());
     }
 }

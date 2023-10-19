@@ -1,15 +1,53 @@
 type Query {
-    getAccounts: [Account]
+    getAccounts(page: Page, filter: AccountFilter): [Account]
+
+    getTransactions(page: Page): [Transaction]
 }
 
 type Mutation {
-    addAccount(accountInput: AccountInput): Account
+    addAccount(accountInput: AccountInput!): Account
     deleteAccount(hash: ID!): Boolean
+
+    addTransaction(transactionInput: TransactionInput!): Transaction
 }
 
 type Account {
     hash: ID!
     name: String!
+}
+
+type Transaction {
+    name: String
+    note: String
+    amount: Float
+    date: String
+    need: Boolean
+    hash: String
+    accountTo: Account
+    accountFrom: Account
+    transactionType: TransactionType
+    category: Category
+
+}
+
+type Category {
+    name: String
+    color: String
+    hash: String
+    income: Boolean
+    parentId: Int
+}
+
+input TransactionInput{
+    name: String
+    amount: Float
+    date: String
+    need: Boolean
+    accountToHash: String
+    accountFromHash: String
+    transactionType: TransactionType
+    categoryHash: String
+    currency: Currency
 }
 
 input AccountInput{
@@ -22,6 +60,47 @@ input AccountInput{
     parentId: Int
 }
 
+input CategoryInput {
+    name: String!
+    color: String!
+    income: Boolean!
+    parentId: Int
+
+}
+
+input IntExpression {
+    eq: Int
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input AccountFilter {
+    operator: Operator
+    name: StringExpression
+    accountType: StringExpression
+    balance: IntExpression
+
+    not: AccountFilter
+}
+
+input StringExpression {
+    stringOperator: StringOperator
+    value: String
+}
+
+input Page {
+    number: Int!
+    size: Int!
+}
+
+enum TransactionType {
+    INCOME
+    EXPENSE
+    TRANSFER
+}
+
 enum Currency {
     PLN
     EUR
@@ -30,4 +109,13 @@ enum Currency {
 enum AccountType {
     REGULAR
     SAVINGS
+}
+
+enum StringOperator {
+    EQ
+}
+
+enum Operator {
+    AND
+    OR
 }

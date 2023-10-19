@@ -1,6 +1,7 @@
 package com.budget.project.exception;
 
 import com.budget.project.exception.model.ServerExceptionResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
@@ -29,6 +30,15 @@ public class GlobalExceptionHandler implements AccessDeniedHandler {
                         HttpStatus.INTERNAL_SERVER_ERROR,
                         "Internal Server Error"),
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ServerExceptionResponse> handleExpiredJwtException(
+            ExpiredJwtException ex) {
+        return new ResponseEntity<>(
+                new ServerExceptionResponse(
+                        HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN, "Token Expired"),
+                HttpStatus.FORBIDDEN);
     }
 
     @SneakyThrows

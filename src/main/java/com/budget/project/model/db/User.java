@@ -2,10 +2,7 @@ package com.budget.project.model.db;
 
 import jakarta.persistence.*;
 import java.util.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,7 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "`user`")
 @Builder(toBuilder = true)
 @NoArgsConstructor

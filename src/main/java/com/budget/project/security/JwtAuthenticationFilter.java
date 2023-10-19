@@ -1,5 +1,6 @@
 package com.budget.project.security;
 
+import com.budget.project.exception.AppException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
+    @SneakyThrows
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -38,6 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         jwt = authHeader.substring(BEARER_PREFIX.length());
+        if (jwtService.isTokenExpired(jwt)) {
+            throw new AppException("JWT Token has expired", HttpStatus.FORBIDDEN);
+        }
         userEmail = jwtService.extractUsername(jwt);
         // check if user is authenticated already
         if (Objects.nonNull(userEmail)

@@ -10,17 +10,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class JwtService {
 
     @Value("${jwt.signing.key}")
     private String SIGNING_KEY;
 
-    private final long EXPIRATION_TIME = 1000 * 60 * 24; // 24 hours
+    @Value("${jwt.expiration}")
+    private long EXPIRATION_TIME;
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
@@ -47,10 +52,13 @@ public class JwtService {
 
     public boolean isTokenValid(String jwt, UserDetails userDetails) {
         final String username = extractUsername(jwt);
+        if (isTokenExpired(jwt)) {
+            log.debug("token is expired");
+        }
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(jwt);
     }
 
-    private boolean isTokenExpired(String jwt) {
+    public boolean isTokenExpired(String jwt) {
         return extractExpiration(jwt).before(new Date());
     }
 

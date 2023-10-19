@@ -23,14 +23,13 @@ public class securityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                //                                .authorizeHttpRequests(
-                //                                        authorizationRequest ->
-                //                                                authorizationRequest
-                //
-                // .requestMatchers("/api/auth/**", "/graphiql")
-                //                                                        .permitAll()
-                //                                                        .anyRequest()
-                //                                                        .authenticated())
+                .authorizeHttpRequests(
+                        authorizationRequest ->
+                                authorizationRequest
+                                        .requestMatchers("/api/auth/**", "/graphiql")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
                 .exceptionHandling(
                         exceptionHandling ->
                                 exceptionHandling.authenticationEntryPoint(

@@ -24,6 +24,7 @@ public class CustomForbiddenEntryPoint implements AuthenticationEntryPoint {
                                         HttpStatus.FORBIDDEN.value(),
                                         HttpStatus.FORBIDDEN,
                                         "You don't have access"));
+        response.setStatus(HttpStatus.FORBIDDEN.value());
         response.getWriter().print(message);
     }
 }

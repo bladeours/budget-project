@@ -37,15 +37,13 @@ public class AuthController {
             @CookieValue("${jwt.refresh.cookie}") String refreshToken,
             HttpServletResponse response) {
 
-        String jwt =
-                jwtService.generateToken(refreshTokenService.findByToken(refreshToken).getUser());
+        String jwt = jwtService.generateToken(refreshTokenService.findByToken(refreshToken).getUser());
         response.addCookie(refreshTokenService.getCookie(refreshToken));
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
     @PostMapping("/logout")
-    public void logout( @CookieValue("${jwt.refresh.cookie}") String refreshToken,
-                        HttpServletResponse response){
+    public void logout(HttpServletResponse response){
         refreshTokenService.deleteTokenForLoggedUser();
         response.addCookie(refreshTokenService.getLogoutCookie());
     }

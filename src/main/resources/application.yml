@@ -1,21 +1,34 @@
+# spring:
+#   datasource:
+#     url: jdbc:h2:file:./localdb;AUTO_SERVER=TRUE
+#     driverClassName: org.h2.Driver
+#     username: sa
+#     password: password
+# spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:file:./localdb;AUTO_SERVER=TRUE
+    username: sa
+    password: password
+    # driver-class-name: org.postgresql.Driver
   jpa:
     hibernate.ddl-auto: create
     show-sql: true
     properties:
       hibernate.format_sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # database: postgresql
+    database-platform: org.hibernate.dialect.H2Dialect
 jwt:
   cookie: jwt
   signing.key: 4aecd426ba172ab96f93649c37f17572abfb4d1ed7120252f5228d66c1a1d951
   # 1000 * 60 * 100 = 100min
-  expiration: 6000000
+  expiration: 15000
+  # expiration: 6000000
   refresh:
     #1000 * 60 * 1000 = 1000min
     expiration: 60000000

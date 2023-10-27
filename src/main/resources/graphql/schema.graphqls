@@ -1,5 +1,5 @@
 type Query {
-    getAccounts(page: Page, filter: AccountFilter): [Account]
+    getAccountsPage(page: Page, filter: AccountFilter): AccountsPage
 
     getTransactions(page: Page): [Transaction]
 }
@@ -11,9 +11,26 @@ type Mutation {
     addTransaction(transactionInput: TransactionInput!): Transaction
 }
 
+type AccountsPage {
+    content: [Account]
+    number: Int
+    size: Int
+    totalElements: Int
+    totalPages: Int
+
+}
+
 type Account {
     hash: ID!
     name: String!
+    description: String
+    balance: Float!
+    color: String!
+    archived: Boolean!
+    parentId: Int
+    accountType: AccountType!
+    currency: Currency!
+
 }
 
 type Transaction {
@@ -65,29 +82,6 @@ input CategoryInput {
     color: String!
     income: Boolean!
     parentId: Int
-
-}
-
-input IntExpression {
-    eq: Int
-    gt: Int
-    gte: Int
-    lt: Int
-    lte: Int
-}
-
-input AccountFilter {
-    operator: Operator
-    name: StringExpression
-    accountType: StringExpression
-    balance: IntExpression
-
-    not: AccountFilter
-}
-
-input StringExpression {
-    stringOperator: StringOperator
-    value: String
 }
 
 input Page {
@@ -109,13 +103,4 @@ enum Currency {
 enum AccountType {
     REGULAR
     SAVINGS
-}
-
-enum StringOperator {
-    EQ
-}
-
-enum Operator {
-    AND
-    OR
 }

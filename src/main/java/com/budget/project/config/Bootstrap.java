@@ -43,6 +43,7 @@ public class Bootstrap implements ApplicationRunner {
                         .currency(Currency.PLN)
                         .color("#ffffff")
                         .name("test_1")
+                        .description("test_1_desc")
                         .build());
         accountService.createAccount(
                 AccountInput.builder()
@@ -51,6 +52,7 @@ public class Bootstrap implements ApplicationRunner {
                         .currency(Currency.PLN)
                         .color("#ffffff")
                         .name("test_2")
+                        .description("test_2_desc")
                         .build());
         categoryService.createCategory(
                 CategoryInput.builder()

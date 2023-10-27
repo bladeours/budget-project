@@ -6,9 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import java.rmi.ServerException;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,9 +19,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler implements AccessDeniedHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ServerExceptionResponse> handleBad(BadCredentialsException ex){
-        log.debug("BadCredentialException handled: " + ex);  
-        return new ResponseEntity<ServerExceptionResponse>(new ServerExceptionResponse(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED, "Bad credentials"), HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ServerExceptionResponse> handleBad(BadCredentialsException ex) {
+        log.debug("BadCredentialException handled: " + ex);
+        return new ResponseEntity<ServerExceptionResponse>(
+                new ServerExceptionResponse(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED,
+                        "Bad credentials"),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AppException.class)
@@ -60,6 +62,7 @@ public class GlobalExceptionHandler implements AccessDeniedHandler {
             HttpServletRequest request,
             HttpServletResponse response,
             AccessDeniedException accessDeniedException) {
+        log.debug("handling exception: " + accessDeniedException);
         throw new AppException("you don't have access", HttpStatus.FORBIDDEN);
     }
 }

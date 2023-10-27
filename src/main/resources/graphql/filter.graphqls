@@ -1,0 +1,38 @@
+input AccountFilter {
+    hash: StringExpression
+    name: StringExpression
+    description: StringExpression
+    balance: FloatExpression
+    color: StringExpression
+#    archived: Boolean
+    parentId: IntExpression
+    accountType: AccountTypeExpression
+    and: [AccountFilter!]
+    or: [AccountFilter!]
+    not: AccountFilter
+}
+
+input StringExpression {
+    equals: String
+    contains: String
+}
+
+input AccountTypeExpression {
+    equals: AccountType
+}
+
+input IntExpression {
+    eq: Int
+    gt: Int
+    gte: Int
+    lt: Int
+    lte: Int
+}
+
+input FloatExpression {
+    eq: Float
+    gt: Float
+    gte: Float
+    lt: Float
+    lte: Float
+}

@@ -1,12 +1,8 @@
 package com.budget.project.security;
 
 import com.budget.project.exception.model.CustomForbiddenEntryPoint;
-
-import io.jsonwebtoken.lang.Arrays;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,14 +27,17 @@ public class securityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(
-                        authorizationRequest ->
-                                authorizationRequest
-                                        .requestMatchers("/api/auth/register","/api/auth/authenticate","/api/auth/refreshtoken", "/graphiql")
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //                .authorizeHttpRequests(
+                //                        authorizationRequest ->
+                //                                authorizationRequest
+                //
+                // .requestMatchers("/api/auth/register","/api/auth/authenticate",
+                //                                                "/api/auth/refreshtoken",
+                // "/graphiql", "/vendor/**")
+                //                                        .permitAll()
+                //                                        .anyRequest()
+                //                                        .authenticated())
                 .exceptionHandling(
                         exceptionHandling ->
                                 exceptionHandling.authenticationEntryPoint(
@@ -51,15 +50,15 @@ public class securityConfig {
         return http.build();
     }
 
-//     @Bean
+    //     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-}
+    }
 }

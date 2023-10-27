@@ -30,7 +30,7 @@ public class Account {
     @Column(nullable = false)
     private Boolean archived;
 
-    private Long parent_id;
+    private Long parentId;
 
     @Column(nullable = false, unique = true)
     private String hash;
@@ -40,6 +40,7 @@ public class Account {
     private AccountType accountType;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Currency currency;
 
     @ManyToMany(
@@ -59,7 +60,7 @@ public class Account {
                 .name(accountInput.name())
                 .currency(accountInput.currency())
                 .description(accountInput.description())
-                .parent_id(accountInput.parentId())
+                .parentId(accountInput.parentId())
                 .balance(accountInput.balance())
                 .users(List.of(user))
                 .build();

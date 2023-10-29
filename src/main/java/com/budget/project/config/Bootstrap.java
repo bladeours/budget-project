@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Profile("local")
 public class Bootstrap implements ApplicationRunner {
 
     private final AuthService authService;
@@ -52,6 +54,15 @@ public class Bootstrap implements ApplicationRunner {
                         .currency(Currency.PLN)
                         .color("#ffffff")
                         .name("test_2")
+                        .description("test_2_desc")
+                        .build());
+        accountService.createAccount(
+                AccountInput.builder()
+                        .accountType(AccountType.SAVINGS)
+                        .balance(14.21)
+                        .currency(Currency.PLN)
+                        .color("#ffffff")
+                        .name("test_3")
                         .description("test_2_desc")
                         .build());
         categoryService.createCategory(

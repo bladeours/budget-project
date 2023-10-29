@@ -1,20 +1,44 @@
 input AccountFilter {
-    hash: StringExpression
-    name: StringExpression
-    description: StringExpression
-    balance: FloatExpression
-    color: StringExpression
+    stringFilters: [StringExpression]
+    doubleFilters: [DoubleExpression]
+    logicOperator: LogicOperator
+    subFilters: [AccountFilter]
 #    archived: Boolean
-    parentId: IntExpression
-    accountType: AccountTypeExpression
-    and: [AccountFilter!]
-    or: [AccountFilter!]
-    not: AccountFilter
+#    parentId: IntExpression
+#    accountType: AccountTypeExpression
+#    and: [AccountFilter!]
+#    or: [AccountFilter!]
+#    not: AccountFilter
+}
+
+enum LogicOperator {
+    AND,
+    OR
+}
+
+input DoubleExpression {
+    field: String
+    operator: NumberOperator
+    value: Float
+}
+
+enum NumberOperator {
+    EQ,
+    GT,
+    GTE,
+    LT,
+    LTE
 }
 
 input StringExpression {
-    equals: String
-    contains: String
+    field: String
+    operator: StringOperator
+    value: String
+}
+
+enum StringOperator {
+    EQUALS
+    CONTAINS
 }
 
 input AccountTypeExpression {

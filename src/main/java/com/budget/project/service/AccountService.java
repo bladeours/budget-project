@@ -1,13 +1,13 @@
 package com.budget.project.service;
 
 import com.budget.project.exception.AppException;
+import com.budget.project.filter.AccountFilter;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.service.repository.AccountRepository;
-import graphql.schema.DataFetchingEnvironment;
 import jakarta.transaction.Transactional;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 public class AccountService {
     private final UserService userService;
     private final AccountRepository accountRepository;
-    private final FilterService filterService;
 
     public Account createAccount(AccountInput accountInput) {
         Account account = Account.of(accountInput, userService.getLoggedUser());
@@ -33,8 +32,14 @@ public class AccountService {
         return account;
     }
 
-    public Page<Account> getAccounts(CustomPage customPage, DataFetchingEnvironment env) {
-        return accountRepository.findAll(filterService.getSpecification(env), PageRequest.of(customPage.number(), customPage.size()));
+    public Page<Account> getAccounts(CustomPage customPage, AccountFilter filter) {
+        if (Objects.isNull(filter)) {
+            return accountRepository.findAll(
+                    PageRequest.of(customPage.number(), customPage.size()));
+        }
+        return accountRepository.findAll(
+                filter.getSpecification(userService.getLoggedUser()),
+                PageRequest.of(customPage.number(), customPage.size()));
     }
 
     public Optional<Account> getAccount(String hash) {

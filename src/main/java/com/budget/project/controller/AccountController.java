@@ -1,11 +1,10 @@
 package com.budget.project.controller;
 
+import com.budget.project.filter.AccountFilter;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.service.AccountService;
-import graphql.schema.DataFetchingEnvironment;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -22,8 +21,9 @@ public class AccountController {
     private final AccountService accountService;
 
     @QueryMapping
-    public Page<Account> getAccountsPage(@Argument CustomPage page, DataFetchingEnvironment env) {
-        return accountService.getAccounts(page, env);
+    public Page<Account> getAccountsPage(
+            @Argument CustomPage page, @Argument("filter") AccountFilter filterObject) {
+        return accountService.getAccounts(page, filterObject);
     }
 
     @MutationMapping

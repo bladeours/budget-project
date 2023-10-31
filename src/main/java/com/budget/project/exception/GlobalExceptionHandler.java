@@ -13,15 +13,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler implements AccessDeniedHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ServerExceptionResponse> handleBad(BadCredentialsException ex) {
+    public ResponseEntity<ServerExceptionResponse> handleBadCredentials(BadCredentialsException ex) {
         log.debug("BadCredentialException handled: " + ex);
-        return new ResponseEntity<ServerExceptionResponse>(
+        return new ResponseEntity<>(
                 new ServerExceptionResponse(
                         HttpStatus.UNAUTHORIZED.value(),
                         HttpStatus.UNAUTHORIZED,
@@ -29,40 +30,40 @@ public class GlobalExceptionHandler implements AccessDeniedHandler {
                 HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(AppException.class)
-    public ResponseEntity<ServerExceptionResponse> handleAppException(AppException ex) {
-        return new ResponseEntity<>(
-                new ServerExceptionResponse(ex.getCode(), ex.getStatus(), ex.getMessage()),
-                ex.getStatus());
-    }
+//    @ExceptionHandler(AppException.class)
+//    public ResponseEntity<ServerExceptionResponse> handleAppException(AppException ex) {
+//        return new ResponseEntity<>(
+//                new ServerExceptionResponse(ex.getCode(), ex.getStatus(), ex.getMessage()),
+//                ex.getStatus());
+//    }
 
-    @ExceptionHandler(InternalServerError.class)
-    public ResponseEntity<ServerExceptionResponse> handleInternalServerError(
-            InternalServerError ex) {
-        return new ResponseEntity<>(
-                new ServerExceptionResponse(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Internal Server Error"),
-                HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(InternalServerError.class)
+//    public ResponseEntity<ServerExceptionResponse> handleInternalServerError(
+//            InternalServerError ex) {
+//        return new ResponseEntity<>(
+//                new ServerExceptionResponse(
+//                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+//                        HttpStatus.INTERNAL_SERVER_ERROR,
+//                        "Internal Server Error"),
+//                HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ServerExceptionResponse> handleExpiredJwtException(
-            ExpiredJwtException ex) {
-        return new ResponseEntity<>(
-                new ServerExceptionResponse(
-                        HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN, "Token Expired"),
-                HttpStatus.FORBIDDEN);
-    }
-
-    @SneakyThrows
-    @Override
-    public void handle(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AccessDeniedException accessDeniedException) {
-        log.debug("handling exception: " + accessDeniedException);
-        throw new AppException("you don't have access", HttpStatus.FORBIDDEN);
-    }
+//    @ExceptionHandler(ExpiredJwtException.class)
+//    public ResponseEntity<ServerExceptionResponse> handleExpiredJwtException(
+//            ExpiredJwtException ex) {
+//        return new ResponseEntity<>(
+//                new ServerExceptionResponse(
+//                        HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN, "Token Expired"),
+//                HttpStatus.FORBIDDEN);
+//    }
+//
+//    @SneakyThrows
+//    @Override
+//    public void handle(
+//            HttpServletRequest request,
+//            HttpServletResponse response,
+//            AccessDeniedException accessDeniedException) {
+//        log.debug("handling exception: " + accessDeniedException);
+//        throw new AppException("you don't have access", HttpStatus.FORBIDDEN);
+//    }
 }

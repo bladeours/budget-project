@@ -8,3 +8,5 @@ spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
 logging:
   level:
     org.hibernate.orm.jdbc.bind: trace
+    root: WARN
+    org.springframework.security: WARN

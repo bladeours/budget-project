@@ -1,7 +1,9 @@
 package com.budget.project.security;
 
 import com.budget.project.exception.model.CustomForbiddenEntryPoint;
+
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 public class securityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -26,18 +28,16 @@ public class securityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(
+                        authorizationRequest ->
+                                authorizationRequest
+                                        .requestMatchers("/api/auth/register", "/api/auth/authenticate",
+                                                "/api/auth/refreshtoken", "/graphiql", "/vendor/**", "/graphql/**")
+                                        .permitAll()
+                                        .anyRequest().authenticated())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                //                .authorizeHttpRequests(
-                //                        authorizationRequest ->
-                //                                authorizationRequest
-                //
-                // .requestMatchers("/api/auth/register","/api/auth/authenticate",
-                //                                                "/api/auth/refreshtoken",
-                // "/graphiql", "/vendor/**")
-                //                                        .permitAll()
-                //                                        .anyRequest()
-                //                                        .authenticated())
                 .exceptionHandling(
                         exceptionHandling ->
                                 exceptionHandling.authenticationEntryPoint(
@@ -45,9 +45,10 @@ public class securityConfig {
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
 
-        return http.build();
+//        return http.build();
     }
 
     //     @Bean

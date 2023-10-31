@@ -32,7 +32,7 @@ public class Bootstrap implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         var authenticationRequest = new AuthenticationRequest("jd", "123");
-        System.out.println(authService.register(authenticationRequest).jwt());
+        System.out.println("JWTTOKEN: " + authService.register(authenticationRequest).jwt());
         var auth =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(

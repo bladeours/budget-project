@@ -1,14 +1,8 @@
-input AccountFilter {
+input Filter {
     stringFilters: [StringExpression]
     doubleFilters: [DoubleExpression]
     logicOperator: LogicOperator
-    subFilters: [AccountFilter]
-#    archived: Boolean
-#    parentId: IntExpression
-#    accountType: AccountTypeExpression
-#    and: [AccountFilter!]
-#    or: [AccountFilter!]
-#    not: AccountFilter
+    subFilters: [Filter]
 }
 
 enum LogicOperator {

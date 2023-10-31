@@ -1,6 +1,6 @@
 package com.budget.project.controller;
 
-import com.budget.project.filter.AccountFilter;
+import com.budget.project.filter.Filter;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.CustomPage;
@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -22,8 +24,13 @@ public class AccountController {
 
     @QueryMapping
     public Page<Account> getAccountsPage(
-            @Argument CustomPage page, @Argument("filter") AccountFilter filterObject) {
+            @Argument CustomPage page, @Argument("filter") Filter filterObject) {
         return accountService.getAccounts(page, filterObject);
+    }
+
+    @QueryMapping
+    public Account getAccount(@Argument("hash") String hash) {
+        return accountService.getAccount(hash);
     }
 
     @MutationMapping

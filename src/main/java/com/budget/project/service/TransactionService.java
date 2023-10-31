@@ -38,92 +38,20 @@ public class TransactionService {
         Category category = null;
         switch (transactionInput.transactionType()) {
             case EXPENSE -> {
-                accountFrom =
-                        accountService
-                                .getAccount(transactionInput.accountFromHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find account with hash: {}",
-                                                    transactionInput.accountFromHash());
-                                            return new AppException(
-                                                    "can't find account with hash: "
-                                                            + transactionInput.accountFromHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
-                category =
-                        categoryService
-                                .getCategory(transactionInput.categoryHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find category with hash: {}",
-                                                    transactionInput.categoryHash());
-                                            return new AppException(
-                                                    "can't find category with hash: "
-                                                            + transactionInput.categoryHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
+                accountFrom = accountService.getAccount(transactionInput.accountFromHash());
+                category = categoryService.getCategory(transactionInput.categoryHash());
                 if (category.getIncome()) {
                     log.debug("category is not for \"expense\"");
                     throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
                 }
             }
             case TRANSFER -> {
-                accountFrom =
-                        accountService
-                                .getAccount(transactionInput.accountFromHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find account with hash: {}",
-                                                    transactionInput.accountFromHash());
-                                            return new AppException(
-                                                    "can't find account with hash: "
-                                                            + transactionInput.accountFromHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
-                accountTo =
-                        accountService
-                                .getAccount(transactionInput.accountToHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find account with hash: {}",
-                                                    transactionInput.accountToHash());
-                                            return new AppException(
-                                                    "can't find account with hash: "
-                                                            + transactionInput.accountToHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
+                accountFrom = accountService.getAccount(transactionInput.accountFromHash());
+                accountTo = accountService.getAccount(transactionInput.accountToHash());
             }
             case INCOME -> {
-                accountTo =
-                        accountService
-                                .getAccount(transactionInput.accountToHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find account with hash: {}",
-                                                    transactionInput.accountToHash());
-                                            return new AppException(
-                                                    "can't find account with hash: "
-                                                            + transactionInput.accountToHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
-                category =
-                        categoryService
-                                .getCategory(transactionInput.categoryHash())
-                                .orElseThrow(
-                                        () -> {
-                                            log.debug(
-                                                    "can't find category with hash: {}",
-                                                    transactionInput.categoryHash());
-                                            return new AppException(
-                                                    "can't find category with hash: "
-                                                            + transactionInput.categoryHash(),
-                                                    HttpStatus.NOT_FOUND);
-                                        });
+                accountTo = accountService.getAccount(transactionInput.accountToHash());
+                category = categoryService.getCategory(transactionInput.categoryHash());
                 if (!category.getIncome()) {
                     log.debug("category is not for \"income\"");
                     throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);

@@ -8,11 +8,11 @@ import jakarta.persistence.criteria.Root;
 import java.util.*;
 import org.springframework.data.jpa.domain.Specification;
 
-public record AccountFilter(
+public record Filter(
         Set<StringExpression> stringFilters,
         Set<DoubleExpression> doubleFilters,
         LogicOperator logicOperator,
-        Set<AccountFilter> subFilters) {
+        Set<Filter> subFilters) {
 
     public Specification<Account> getSpecification(User user) {
         return (root, query, criteriaBuilder) -> {
@@ -26,10 +26,10 @@ public record AccountFilter(
     }
 
     private Predicate toPredicate(
-            AccountFilter accountFilter, CriteriaBuilder criteriaBuilder, Root<Account> root) {
+            Filter filter, CriteriaBuilder criteriaBuilder, Root<Account> root) {
         List<Predicate> predicates = new ArrayList<>();
-        if (Objects.nonNull(accountFilter.stringFilters())) {
-            for (StringExpression stringExpression : accountFilter.stringFilters()) {
+        if (Objects.nonNull(filter.stringFilters())) {
+            for (StringExpression stringExpression : filter.stringFilters()) {
                 switch (stringExpression.operator()) {
                     case EQUALS -> predicates.add(
                             criteriaBuilder.equal(
@@ -41,8 +41,8 @@ public record AccountFilter(
                 }
             }
         }
-        if (Objects.nonNull(accountFilter.doubleFilters())) {
-            for (DoubleExpression doubleExpression : accountFilter.doubleFilters()) {
+        if (Objects.nonNull(filter.doubleFilters())) {
+            for (DoubleExpression doubleExpression : filter.doubleFilters()) {
                 switch (doubleExpression.operator()) {
                     case EQ -> predicates.add(
                             criteriaBuilder.equal(
@@ -57,21 +57,21 @@ public record AccountFilter(
             }
         }
 
-        if (accountFilter.subFilters() != null) {
+        if (filter.subFilters() != null) {
             List<Predicate> subPredicates = new ArrayList<>();
-            for (AccountFilter subFilter : accountFilter.subFilters()) {
+            for (Filter subFilter : filter.subFilters()) {
                 Predicate subPredicate = toPredicate(subFilter, criteriaBuilder, root);
                 subPredicates.add(subPredicate);
             }
 
-            if (accountFilter.logicOperator() == LogicOperator.AND) {
+            if (filter.logicOperator() == LogicOperator.AND) {
                 return criteriaBuilder.and(subPredicates.toArray(new Predicate[0]));
-            } else if (accountFilter.logicOperator() == LogicOperator.OR) {
+            } else if (filter.logicOperator() == LogicOperator.OR) {
                 return criteriaBuilder.or(subPredicates.toArray(new Predicate[0]));
             }
         }
 
-        switch (accountFilter.logicOperator()) {
+        switch (filter.logicOperator()) {
             case OR -> {
                 return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
             }

@@ -1,10 +1,12 @@
 package com.budget.project.exception.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.GraphqlErrorBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.graphql.execution.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -22,10 +24,10 @@ public class CustomForbiddenEntryPoint implements AuthenticationEntryPoint {
         String message =
                 new ObjectMapper()
                         .writeValueAsString(
-                                new ServerExceptionResponse(
-                                        HttpStatus.FORBIDDEN.value(),
-                                        HttpStatus.FORBIDDEN,
-                                        "You don't have access"));
+                                GraphqlErrorBuilder.newError()
+                                        .errorType(ErrorType.UNAUTHORIZED)
+                                        .message("you don't have access")
+                                        .build());
         log.debug("CustomForbiddenEntryPoint: " + authException);
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.getWriter().print(message);

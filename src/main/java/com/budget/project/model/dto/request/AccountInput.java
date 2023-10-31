@@ -12,4 +12,4 @@ public record AccountInput(
         Currency currency,
         String description,
         String name,
-        Long parentId) {}
+        String parentHash) {}

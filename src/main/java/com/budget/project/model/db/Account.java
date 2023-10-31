@@ -30,7 +30,11 @@ public class Account {
     @Column(nullable = false)
     private Boolean archived;
 
-    private Long parentId;
+    @OneToMany
+    private List<Account> subAccounts = new ArrayList<>();
+
+    @ManyToOne
+    private Account parent;
 
     @Column(nullable = false, unique = true)
     private String hash;
@@ -51,6 +55,12 @@ public class Account {
     @OneToMany(mappedBy = "accountFrom")
     private Set<Transaction> transactions = new HashSet<>();
 
+    public static Account of(AccountInput accountInput, User user, Account parent) {
+        return Account.of(accountInput, user)
+                .toBuilder()
+                .parent(parent)
+                .build();
+    }
     public static Account of(AccountInput accountInput, User user) {
         return Account.builder()
                 .color(accountInput.color())
@@ -60,7 +70,6 @@ public class Account {
                 .name(accountInput.name())
                 .currency(accountInput.currency())
                 .description(accountInput.description())
-                .parentId(accountInput.parentId())
                 .balance(accountInput.balance())
                 .users(List.of(user))
                 .build();

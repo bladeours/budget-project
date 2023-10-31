@@ -1,6 +1,6 @@
 type Query {
-    getAccountsPage(page: Page, filter: AccountFilter): AccountsPage
-
+    getAccountsPage(page: Page, filter: Filter): AccountsPage
+    getAccount(hash: String!): Account
     getTransactions(page: Page): [Transaction]
 }
 

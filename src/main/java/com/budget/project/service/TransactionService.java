@@ -7,6 +7,10 @@ import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.TransactionInput;
 import com.budget.project.service.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
+
+import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -58,9 +62,9 @@ public class TransactionService {
                 }
             }
         }
-
+        LocalDateTime date = LocalDateTime.parse(transactionInput.date(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Transaction transaction =
-                Transaction.of(transactionInput, accountFrom, accountTo, category);
+                Transaction.of(transactionInput, accountFrom, accountTo, category, date);
         transaction = transactionRepository.save(transaction);
         if (Objects.nonNull(accountFrom)) {
             accountFrom.getTransactions().add(transaction);

@@ -1,6 +1,7 @@
 package com.budget.project.config;
 
 import com.budget.project.auth.service.AuthService;
+import com.budget.project.model.db.Account;
 import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.dto.request.AccountInput;
@@ -38,7 +39,7 @@ public class Bootstrap implements ApplicationRunner {
                         new UsernamePasswordAuthenticationToken(
                                 authenticationRequest.email(), authenticationRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(auth);
-        accountService.createAccount(
+        Account account = accountService.createAccount(
                 AccountInput.builder()
                         .accountType(AccountType.REGULAR)
                         .balance(21.36)
@@ -47,6 +48,17 @@ public class Bootstrap implements ApplicationRunner {
                         .name("test_1")
                         .description("test_1_desc")
                         .build());
+        accountService.createAccount(
+                AccountInput.builder()
+                        .accountType(AccountType.SAVINGS)
+                        .balance(1.2)
+                        .currency(Currency.PLN)
+                        .color("33")
+                        .name("test_1_sub_1")
+                        .description("test_1_desc_sub_1")
+                        .parentHash(account.getHash())
+                        .build()
+        );
         accountService.createAccount(
                 AccountInput.builder()
                         .accountType(AccountType.SAVINGS)

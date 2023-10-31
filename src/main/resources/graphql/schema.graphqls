@@ -1,37 +1,19 @@
 type Query {
     getAccountsPage(page: Page, filter: Filter): AccountsPage
     getAccount(hash: String!): Account
+
     getTransactions(page: Page): [Transaction]
+    getTransaction(hash: String!): Transaction
 }
 
 type Mutation {
     addAccount(accountInput: AccountInput!): Account
-    deleteAccount(hash: ID!): Boolean
+    deleteAccount(hash: ID!, removeSub: Boolean!): Boolean
 
     addTransaction(transactionInput: TransactionInput!): Transaction
 }
 
-type AccountsPage {
-    content: [Account]
-    number: Int
-    size: Int
-    totalElements: Int
-    totalPages: Int
 
-}
-
-type Account {
-    hash: ID!
-    name: String!
-    description: String
-    balance: Float!
-    color: String!
-    archived: Boolean!
-    parentId: Int
-    accountType: AccountType!
-    currency: Currency!
-
-}
 
 type Transaction {
     name: String
@@ -44,7 +26,6 @@ type Transaction {
     accountFrom: Account
     transactionType: TransactionType
     category: Category
-
 }
 
 type Category {
@@ -55,26 +36,16 @@ type Category {
     parentId: Int
 }
 
-input TransactionInput{
-    name: String
-    amount: Float
-    date: String
-    need: Boolean
+input TransactionInput {
+    name: String!
+    amount: Float!
+    date: String!
+    need: Boolean!
     accountToHash: String
     accountFromHash: String
-    transactionType: TransactionType
+    transactionType: TransactionType!
     categoryHash: String
-    currency: Currency
-}
-
-input AccountInput{
-    accountType: AccountType!
-    balance: Float!
-    color: String!
     currency: Currency!
-    description: String
-    name: String
-    parentId: Int
 }
 
 input CategoryInput {
@@ -100,7 +71,3 @@ enum Currency {
     EUR
 }
 
-enum AccountType {
-    REGULAR
-    SAVINGS
-}

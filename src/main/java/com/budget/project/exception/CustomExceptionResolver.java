@@ -31,6 +31,12 @@ public class CustomExceptionResolver  extends DataFetcherExceptionResolverAdapte
         } else {
             log.error("" + ex);
             return null;
+//            GraphqlErrorBuilder.newError()
+//                    .errorType(ErrorType.INTERNAL_ERROR)
+//                    .message(ex.getMessage())
+//                    .path(env.getExecutionStepInfo().getPath())
+//                    .location(env.getField().getSourceLocation())
+//                    .build();
         }
     }
 }

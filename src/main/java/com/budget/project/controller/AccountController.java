@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/account")
 public class AccountController {
 
     private final AccountService accountService;
@@ -29,7 +28,7 @@ public class AccountController {
     }
 
     @QueryMapping
-    public Account getAccount(@Argument("hash") String hash) {
+    public Account getAccount(@Argument String hash) {
         return accountService.getAccount(hash);
     }
 
@@ -39,8 +38,8 @@ public class AccountController {
     }
 
     @MutationMapping
-    public boolean deleteAccount(@Argument String hash) {
-        accountService.deleteAccount(hash);
+    public boolean deleteAccount(@Argument String hash, @Argument Boolean removeSub) {
+        accountService.deleteAccount(hash, removeSub);
         return true;
     }
 }

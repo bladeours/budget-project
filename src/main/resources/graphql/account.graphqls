@@ -1,0 +1,35 @@
+type AccountsPage {
+    content: [Account]
+    number: Int
+    size: Int
+    totalElements: Int
+    totalPages: Int
+}
+
+type Account {
+    hash: ID!
+    name: String!
+    description: String
+    balance: Float!
+    color: String!
+    archived: Boolean!
+    parent: Account
+    accountType: AccountType!
+    currency: Currency!
+    subAccounts: [Account]
+}
+
+input AccountInput{
+    accountType: AccountType!
+    balance: Float!
+    color: String!
+    currency: Currency!
+    description: String
+    name: String
+    parentId: Int
+}
+
+enum AccountType {
+    REGULAR
+    SAVINGS
+}

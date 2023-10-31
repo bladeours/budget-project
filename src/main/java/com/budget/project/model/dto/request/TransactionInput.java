@@ -9,7 +9,7 @@ public record TransactionInput(
         String name,
         String note,
         @NonNull Double amount,
-        @NonNull Date date,
+        @NonNull String date,
         Boolean need,
         String accountToHash,
         String accountFromHash,

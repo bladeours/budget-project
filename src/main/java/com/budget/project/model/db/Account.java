@@ -3,13 +3,12 @@ package com.budget.project.model.db;
 import com.budget.project.model.dto.request.AccountInput;
 import jakarta.persistence.*;
 import java.util.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 @Entity
 @Data
+@EqualsAndHashCode
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,6 +51,7 @@ public class Account {
             cascade = {CascadeType.DETACH})
     private List<User> users = new ArrayList<>();
 
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "accountFrom")
     private Set<Transaction> transactions = new HashSet<>();
 

@@ -3,12 +3,14 @@ package com.budget.project.service;
 import com.budget.project.exception.AppException;
 import com.budget.project.filter.Filter;
 import com.budget.project.model.db.Account;
+import com.budget.project.model.db.Transaction;
+import com.budget.project.model.db.User;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.service.repository.AccountRepository;
 import jakarta.transaction.Transactional;
 import java.util.Objects;
-import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,10 @@ public class AccountService {
             if(Objects.nonNull(parent.getParent())) {
                 log.warn("only one level of subAccounts is possible");
                 throw new AppException("only one level of subAccounts is possible", HttpStatus.BAD_REQUEST);
+            }
+            if(!loggedUserHasAccess(parent)) {
+                log.debug("{} doesn't have access to parent: {}", userService.getLoggedUser().getEmail(), parent.getHash());
+                throw new AppException(HttpStatus.FORBIDDEN);
             }
             account = Account.of(accountInput, userService.getLoggedUser(), parent);
             account = accountRepository.save(account);
@@ -69,8 +75,20 @@ public class AccountService {
     }
 
     @SneakyThrows
-    public void deleteAccount(String hash) {
+    public void deleteAccount(String hash, Boolean removeSub) {
         Account account = this.findByHash(hash);
+        if(!loggedUserHasAccess(account)) {
+            log.debug("{} doesn't have access to account: {}", userService.getLoggedUser().getEmail(), account.getHash());
+            throw new AppException(HttpStatus.FORBIDDEN);
+        }
+        if(removeSub) {
+            for(Account child: account.getSubAccounts()) {
+                deleteAccount(child.getHash(), false);
+            }
+        }
+        for(Transaction transaction: account.getTransactions()){
+            //TODO removing transactions
+        }
         userService.getLoggedUser().getAccounts().remove(account);
         accountRepository.delete(account);
     }
@@ -84,5 +102,9 @@ public class AccountService {
                             log.debug("there is no account with hash: {}, at least for logged user", hash);
                             return new AppException("this account doesn't exist", HttpStatus.NOT_FOUND);
                         });
+    }
+
+    private Boolean loggedUserHasAccess(Account account){
+        return account.getUsers().contains(userService.getLoggedUser());
     }
 }

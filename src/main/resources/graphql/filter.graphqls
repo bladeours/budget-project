@@ -1,6 +1,7 @@
 input Filter {
     stringFilters: [StringExpression]
     doubleFilters: [DoubleExpression]
+    dateFilters: [DateExpression]
     logicOperator: LogicOperator
     subFilters: [Filter]
 }
@@ -11,9 +12,9 @@ enum LogicOperator {
 }
 
 input DoubleExpression {
-    field: String
-    operator: NumberOperator
-    value: Float
+    field: String!
+    operator: NumberOperator!
+    value: Float!
 }
 
 enum NumberOperator {
@@ -25,9 +26,9 @@ enum NumberOperator {
 }
 
 input StringExpression {
-    field: String
-    operator: StringOperator
-    value: String
+    field: String!
+    operator: StringOperator!
+    value: String!
 }
 
 enum StringOperator {
@@ -35,22 +36,13 @@ enum StringOperator {
     CONTAINS
 }
 
-input AccountTypeExpression {
-    equals: AccountType
+input DateExpression {
+    field: String!
+    operator: DateOperator!
+    values: [String]!
 }
 
-input IntExpression {
-    eq: Int
-    gt: Int
-    gte: Int
-    lt: Int
-    lte: Int
+enum DateOperator {
+    BETWEEN
 }
 
-input FloatExpression {
-    eq: Float
-    gt: Float
-    gte: Float
-    lt: Float
-    lte: Float
-}

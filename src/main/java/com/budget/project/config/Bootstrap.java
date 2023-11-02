@@ -1,14 +1,14 @@
 package com.budget.project.config;
 
 import com.budget.project.auth.service.AuthService;
-import com.budget.project.model.db.Account;
-import com.budget.project.model.db.AccountType;
-import com.budget.project.model.db.Currency;
+import com.budget.project.model.db.*;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.model.dto.request.CategoryInput;
+import com.budget.project.model.dto.request.TransactionInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
+import com.budget.project.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -29,6 +29,7 @@ public class Bootstrap implements ApplicationRunner {
     private final AccountService accountService;
     private final AuthenticationManager authenticationManager;
     private final CategoryService categoryService;
+    private final TransactionService transactionService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -39,15 +40,16 @@ public class Bootstrap implements ApplicationRunner {
                         new UsernamePasswordAuthenticationToken(
                                 authenticationRequest.email(), authenticationRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(auth);
-        Account account = accountService.createAccount(
-                AccountInput.builder()
-                        .accountType(AccountType.REGULAR)
-                        .balance(21.36)
-                        .currency(Currency.PLN)
-                        .color("#ffffff")
-                        .name("test_1")
-                        .description("test_1_desc")
-                        .build());
+        Account account1 =
+                accountService.createAccount(
+                        AccountInput.builder()
+                                .accountType(AccountType.REGULAR)
+                                .balance(21.36)
+                                .currency(Currency.PLN)
+                                .color("#ffffff")
+                                .name("test_1")
+                                .description("test_1_desc")
+                                .build());
         accountService.createAccount(
                 AccountInput.builder()
                         .accountType(AccountType.SAVINGS)
@@ -56,9 +58,8 @@ public class Bootstrap implements ApplicationRunner {
                         .color("33")
                         .name("test_1_sub_1")
                         .description("test_1_desc_sub_1")
-                        .parentHash(account.getHash())
-                        .build()
-        );
+                        .parentHash(account1.getHash())
+                        .build());
         accountService.createAccount(
                 AccountInput.builder()
                         .accountType(AccountType.SAVINGS)
@@ -77,12 +78,50 @@ public class Bootstrap implements ApplicationRunner {
                         .name("test_3")
                         .description("test_2_desc")
                         .build());
-        categoryService.createCategory(
-                CategoryInput.builder()
-                        .income(false)
-                        .parentId(null)
-                        .color("#ffffff")
-                        .name("category_1")
-                        .build());
+        Category category1 =
+                categoryService.createCategory(
+                        CategoryInput.builder()
+                                .income(false)
+                                .parentId(null)
+                                .color("#ffffff")
+                                .name("category_1")
+                                .build());
+
+        Transaction transaction1 =
+                transactionService.createTransaction(
+                        TransactionInput.builder()
+                                .transactionType(TransactionType.EXPENSE)
+                                .accountFromHash(account1.getHash())
+                                .amount(10.0)
+                                .date("2023-11-01T15:20:10")
+                                .need(false)
+                                .categoryHash(category1.getHash())
+                                .currency(Currency.PLN)
+                                .name("transaction_1")
+                                .build());
+        Transaction transaction2 =
+                transactionService.createTransaction(
+                        TransactionInput.builder()
+                                .transactionType(TransactionType.EXPENSE)
+                                .accountFromHash(account1.getHash())
+                                .amount(10.0)
+                                .date("2022-11-01T15:20:10")
+                                .need(false)
+                                .categoryHash(category1.getHash())
+                                .currency(Currency.PLN)
+                                .name("transaction_2")
+                                .build());
+        Transaction transaction3 =
+                transactionService.createTransaction(
+                        TransactionInput.builder()
+                                .transactionType(TransactionType.EXPENSE)
+                                .accountFromHash(account1.getHash())
+                                .amount(10.0)
+                                .date("2023-10-01T15:20:10")
+                                .need(false)
+                                .categoryHash(category1.getHash())
+                                .currency(Currency.PLN)
+                                .name("transaction_3")
+                                .build());
     }
 }

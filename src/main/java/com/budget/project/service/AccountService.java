@@ -1,17 +1,17 @@
 package com.budget.project.service;
 
 import com.budget.project.exception.AppException;
-import com.budget.project.filter.Filter;
+import com.budget.project.filter.model.Filter;
+import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.db.User;
 import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.service.repository.AccountRepository;
 import jakarta.transaction.Transactional;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,18 +26,24 @@ import org.springframework.stereotype.Service;
 public class AccountService {
     private final UserService userService;
     private final AccountRepository accountRepository;
+    private final FilterService filterService;
+    @Setter private TransactionService transactionService;
 
     @SneakyThrows
     public Account createAccount(AccountInput accountInput) {
         Account account;
-        if(Objects.nonNull(accountInput.parentHash())){
-            Account parent = this.findByHash(accountInput.parentHash());
-            if(Objects.nonNull(parent.getParent())) {
+        if (Objects.nonNull(accountInput.parentHash())) {
+            Account parent = this.getAccount(accountInput.parentHash());
+            if (Objects.nonNull(parent.getParent())) {
                 log.warn("only one level of subAccounts is possible");
-                throw new AppException("only one level of subAccounts is possible", HttpStatus.BAD_REQUEST);
+                throw new AppException(
+                        "only one level of subAccounts is possible", HttpStatus.BAD_REQUEST);
             }
-            if(!loggedUserHasAccess(parent)) {
-                log.debug("{} doesn't have access to parent: {}", userService.getLoggedUser().getEmail(), parent.getHash());
+            if (!loggedUserHasAccess(parent)) {
+                log.debug(
+                        "{} doesn't have access to parent: {}",
+                        userService.getLoggedUser().getEmail(),
+                        parent.getHash());
                 throw new AppException(HttpStatus.FORBIDDEN);
             }
             account = Account.of(accountInput, userService.getLoggedUser(), parent);
@@ -51,60 +57,51 @@ public class AccountService {
         return account;
     }
 
-    public Page<Account> getAccounts(CustomPage customPage, Filter filter) {
+    public Page<Account> getAccountsPage(CustomPage page, Filter filter) {
         if (Objects.isNull(filter)) {
             return accountRepository.findAllByUsersContaining(
-                    PageRequest.of(customPage.number(), customPage.size()), userService.getLoggedUser());
+                    PageRequest.of(page.number(), page.size()), userService.getLoggedUser());
         }
         return accountRepository.findAll(
-                filter.getSpecification(userService.getLoggedUser()),
-                PageRequest.of(customPage.number(), customPage.size()));
+                filterService.getSpecification(filter, Account.class),
+                PageRequest.of(page.number(), page.size()));
     }
 
     @SneakyThrows
     public Account getAccount(String hash) {
-        return accountRepository.findByHashAndUsersContainingIgnoreCase(
-                hash, userService.getLoggedUser()).orElseThrow(
-                () -> {
-                    log.warn(
-                            "can't find account with hash: {}", hash);
-                    return new AppException(
-                            "can't find account with hash: " + hash,
-                            HttpStatus.NOT_FOUND);
-                });
+        return accountRepository
+                .findByHashAndUsersContainingIgnoreCase(hash, userService.getLoggedUser())
+                .orElseThrow(
+                        () -> {
+                            log.warn("can't find account with hash: {}", hash);
+                            return new AppException(
+                                    "can't find account with hash: " + hash, HttpStatus.NOT_FOUND);
+                        });
     }
 
     @SneakyThrows
     public void deleteAccount(String hash, Boolean removeSub) {
-        Account account = this.findByHash(hash);
-        if(!loggedUserHasAccess(account)) {
-            log.debug("{} doesn't have access to account: {}", userService.getLoggedUser().getEmail(), account.getHash());
+        Account account = this.getAccount(hash);
+        if (!loggedUserHasAccess(account)) {
+            log.debug(
+                    "{} doesn't have access to account: {}",
+                    userService.getLoggedUser().getEmail(),
+                    account.getHash());
             throw new AppException(HttpStatus.FORBIDDEN);
         }
-        if(removeSub) {
-            for(Account child: account.getSubAccounts()) {
+        if (removeSub) {
+            for (Account child : account.getSubAccounts()) {
                 deleteAccount(child.getHash(), false);
             }
         }
-        for(Transaction transaction: account.getTransactions()){
-            //TODO removing transactions
+        for (Transaction transaction : account.getTransactions()) {
+            transactionService.deleteTransaction(transaction);
         }
         userService.getLoggedUser().getAccounts().remove(account);
         accountRepository.delete(account);
     }
 
-    @SneakyThrows
-    private Account findByHash(String hash) {
-        return accountRepository
-                .findByHashAndUsersContainingIgnoreCase(hash, userService.getLoggedUser())
-                .orElseThrow(
-                        () -> {
-                            log.debug("there is no account with hash: {}, at least for logged user", hash);
-                            return new AppException("this account doesn't exist", HttpStatus.NOT_FOUND);
-                        });
-    }
-
-    private Boolean loggedUserHasAccess(Account account){
+    private Boolean loggedUserHasAccess(Account account) {
         return account.getUsers().contains(userService.getLoggedUser());
     }
 }

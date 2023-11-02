@@ -1,11 +1,10 @@
 package com.budget.project.model.db;
 
 import com.budget.project.model.dto.request.TransactionInput;
+import com.budget.project.utils.DateUtils;
 import jakarta.persistence.*;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import lombok.*;
 
 @Entity
@@ -39,7 +38,7 @@ public class Transaction {
     @JoinColumn(name = "account_from_id")
     private Account accountFrom;
 
-//    @Column(nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
@@ -53,13 +52,12 @@ public class Transaction {
             TransactionInput transactionInput,
             Account accountFrom,
             Account accountTo,
-            Category category,
-            LocalDateTime date) {
+            Category category) {
         return Transaction.builder()
                 .name(transactionInput.name())
                 .note(transactionInput.note())
                 .amount(transactionInput.amount())
-                .date(date)
+                .date(DateUtils.parse(transactionInput.date()))
                 .need(transactionInput.need())
                 .hash(UUID.randomUUID().toString())
                 .accountTo(accountTo)

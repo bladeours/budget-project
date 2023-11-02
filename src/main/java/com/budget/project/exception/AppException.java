@@ -1,9 +1,9 @@
 package com.budget.project.exception;
 
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Getter
 public class AppException extends RuntimeException {
@@ -25,7 +25,10 @@ public class AppException extends RuntimeException {
     private static String getExceptionMessage(HttpStatus status) {
         switch (status) {
             case FORBIDDEN -> {
-                return  "you don't have permissions to do it";
+                return "you don't have permissions to do it";
+            }
+            case BAD_REQUEST -> {
+                return "Bad Request";
             }
             default -> {
                 return "exception";

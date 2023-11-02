@@ -2,9 +2,10 @@ package com.budget.project.model.dto.request;
 
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.db.TransactionType;
-import java.sql.Date;
+import lombok.Builder;
 import org.springframework.lang.NonNull;
 
+@Builder(toBuilder = true)
 public record TransactionInput(
         String name,
         String note,

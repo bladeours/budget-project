@@ -1,0 +1,38 @@
+type TransactionsPage {
+    content: [Transaction]
+    number: Int
+    size: Int
+    totalElements: Int
+    totalPages: Int
+}
+
+input TransactionInput {
+    name: String!
+    amount: Float!
+    date: String!
+    need: Boolean!
+    accountToHash: String
+    accountFromHash: String
+    transactionType: TransactionType!
+    categoryHash: String
+    currency: Currency!
+}
+
+type Transaction {
+    name: String
+    note: String
+    amount: Float
+    date: String
+    need: Boolean
+    hash: String
+    accountTo: Account
+    accountFrom: Account
+    transactionType: TransactionType
+    category: Category
+}
+
+enum TransactionType {
+    INCOME
+    EXPENSE
+    TRANSFER
+}

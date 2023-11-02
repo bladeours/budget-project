@@ -1,4 +1,4 @@
-package com.budget.project.filter;
+package com.budget.project.filter.model;
 
 public enum NumberOperator {
     LT,

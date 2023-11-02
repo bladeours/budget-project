@@ -29,7 +29,7 @@ public class FilterTest {
     @Autowired private AuthenticationManager authenticationManager;
 
     @Test
-    public void test() {
+    public void nestedFilterTest() {
         var authenticationRequest = new AuthenticationRequest("jd", "123");
         System.out.println(authService.register(authenticationRequest).jwt());
         var auth =
@@ -120,9 +120,25 @@ public class FilterTest {
                         .path("data.getAccountsPage.content")
                         .entityList(Account.class);
         assertAll(
-                () -> assertThat(accounts.get().stream().anyMatch(a -> a.getHash().equals(account_2.getHash())))
+                () ->
+                        assertThat(
+                                        accounts.get().stream()
+                                                .anyMatch(
+                                                        a ->
+                                                                a.getHash()
+                                                                        .equals(
+                                                                                account_2
+                                                                                        .getHash())))
                                 .isTrue(),
-                () -> assertThat(accounts.get().stream().anyMatch(a -> a.getHash().equals(account_3.getHash())))
+                () ->
+                        assertThat(
+                                        accounts.get().stream()
+                                                .anyMatch(
+                                                        a ->
+                                                                a.getHash()
+                                                                        .equals(
+                                                                                account_3
+                                                                                        .getHash())))
                                 .isTrue(),
                 () -> assertThat(accounts.get()).hasSize(2));
     }

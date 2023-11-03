@@ -9,18 +9,22 @@ import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.model.dto.request.TransactionInput;
 import com.budget.project.service.repository.TransactionRepository;
+
 import jakarta.transaction.Transactional;
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class TransactionService {
@@ -30,6 +34,19 @@ public class TransactionService {
     private final AccountService accountService;
     private final CategoryService categoryService;
     private final FilterService filterService;
+
+    public TransactionService(
+            TransactionRepository transactionRepository,
+            UserService userService,
+            @Lazy AccountService accountService,
+            @Lazy CategoryService categoryService,
+            FilterService filterService) {
+        this.transactionRepository = transactionRepository;
+        this.userService = userService;
+        this.accountService = accountService;
+        this.categoryService = categoryService;
+        this.filterService = filterService;
+    }
 
     @SneakyThrows
     public Transaction createTransaction(TransactionInput transactionInput) {
@@ -143,7 +160,13 @@ public class TransactionService {
     }
 
     public Transaction getTransaction(String hash) {
-        return transactionRepository.findByHashForUser(hash, userService.getLoggedUser());
+        return transactionRepository
+                .findByHashForUser(hash, userService.getLoggedUser())
+                .orElseThrow(() -> {
+                    log.warn("can't find transaction with hash: {}", hash);
+                    return new AppException(
+                            "can't find transaction with hash: " + hash, HttpStatus.NOT_FOUND);
+                });
     }
 
     public void deleteTransaction(Transaction transaction) {

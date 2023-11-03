@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface TransactionRepository
         extends JpaRepository<Transaction, Integer>, JpaSpecificationExecutor<Transaction> {
 
@@ -20,5 +22,5 @@ public interface TransactionRepository
     @Query(
             "SELECT t FROM Transaction t LEFT JOIN t.accountFrom af LEFT JOIN t.accountTo at WHERE"
                 + " (:user MEMBER OF af.users OR :user MEMBER OF at.users) AND t.hash like :hash")
-    Transaction findByHashForUser(String hash, User user);
+    Optional<Transaction> findByHashForUser(String hash, User user);
 }

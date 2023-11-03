@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class AccountService {
     private final UserService userService;
     private final AccountRepository accountRepository;
     private final FilterService filterService;
-    @Setter private TransactionService transactionService;
+    private final TransactionService transactionService;
 
     @SneakyThrows
     public Account createAccount(AccountInput accountInput) {
@@ -89,9 +90,12 @@ public class AccountService {
                     account.getHash());
             throw new AppException(HttpStatus.FORBIDDEN);
         }
-        if (removeSub) {
-            for (Account child : account.getSubAccounts()) {
+
+        for (Account child : account.getSubAccounts()) {
+            if (removeSub) {
                 deleteAccount(child.getHash(), false);
+             } else {
+                child.setParent(null);
             }
         }
         for (Transaction transaction : account.getTransactions()) {

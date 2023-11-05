@@ -37,7 +37,7 @@ public class User implements UserDetails {
             name = "user_account",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "account_id")})
-    List<Account> accounts = new ArrayList<>();
+    Set<Account> accounts = new HashSet<>();
 
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(

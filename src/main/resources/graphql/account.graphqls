@@ -25,8 +25,9 @@ input AccountInput{
     color: String!
     currency: Currency!
     description: String
-    name: String
-    parentHash: Int
+    name: String!
+    parentHash: String
+    archived: Boolean!
 }
 
 enum AccountType {

@@ -7,9 +7,10 @@ import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
-import com.budget.project.model.dto.request.AccountInput;
 import com.budget.project.model.dto.request.AuthenticationRequest;
+import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.AccountService;
+import com.budget.project.service.repository.UserRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Objects;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -36,13 +38,20 @@ public class FilterTest {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     public void nestedFilterTest() {
-        var authenticationRequest = new AuthenticationRequest("jd", "123");
-        System.out.println(authService.register(authenticationRequest).jwt());
-        var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.email(), authenticationRequest.password()));
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        if (Objects.isNull(userRepository.findByEmail("jd"))) {
+            var authenticationRequest = new AuthenticationRequest("jd", "123");
+            authService.register(authenticationRequest);
+            var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    authenticationRequest.email(), authenticationRequest.password()));
+        } else {
+            authService.authenticate(new AuthenticationRequest("jd", "123"));
+        }
+
         Account account_1 = accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.REGULAR)
                 .balance(21.36)

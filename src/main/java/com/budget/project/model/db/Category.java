@@ -1,14 +1,17 @@
 package com.budget.project.model.db;
 
-import com.budget.project.model.dto.request.CategoryInput;
+import com.budget.project.model.dto.request.input.CategoryInput;
+
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -16,7 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Category {
-    @Id @GeneratedValue private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -30,6 +35,9 @@ public class Category {
     private Boolean income;
 
     private Long parentId;
+
+    @Column(nullable = false)
+    private Boolean archived;
 
     @ManyToMany(mappedBy = "categories")
     private Set<User> users = new HashSet<>();
@@ -48,6 +56,7 @@ public class Category {
                 .parentId(categoryInput.parentId())
                 .users(Set.of(user))
                 .hash(UUID.randomUUID().toString())
+                .archived(categoryInput.archived())
                 .build();
     }
 }

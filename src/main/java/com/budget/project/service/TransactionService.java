@@ -7,10 +7,10 @@ import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.CustomPage;
-import com.budget.project.model.dto.request.TransactionInput;
+import com.budget.project.model.dto.request.input.TransactionInput;
+import com.budget.project.model.dto.request.input.TransactionUpdateInput;
+import com.budget.project.service.repository.AccountRepository;
 import com.budget.project.service.repository.TransactionRepository;
-
-import jakarta.transaction.Transactional;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
 @Service
-// @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class TransactionService {
@@ -34,18 +34,21 @@ public class TransactionService {
     private final AccountService accountService;
     private final CategoryService categoryService;
     private final FilterService filterService;
+    private final AccountRepository accountRepository;
 
     public TransactionService(
             TransactionRepository transactionRepository,
             UserService userService,
             @Lazy AccountService accountService,
             @Lazy CategoryService categoryService,
-            FilterService filterService) {
+            FilterService filterService,
+            AccountRepository accountRepository) {
         this.transactionRepository = transactionRepository;
         this.userService = userService;
         this.accountService = accountService;
         this.categoryService = categoryService;
         this.filterService = filterService;
+        this.accountRepository = accountRepository;
     }
 
     @SneakyThrows
@@ -72,14 +75,14 @@ public class TransactionService {
         Account accountTo = accountService.getAccount(transactionInput.accountToHash());
         Category category = categoryService.getCategory(transactionInput.categoryHash());
         if (!category.getIncome()) {
-            log.debug("category is not for \"income\"");
+            log.warn("category is not for \"income\"");
             throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
         }
         Transaction transaction = Transaction.of(transactionInput, null, accountTo, category);
         transaction = transactionRepository.save(transaction);
         accountTo.getTransactions().add(transaction);
         addToBalance(accountTo, transaction.getAmount());
-        return transaction;
+        return transactionRepository.save(transaction);
     }
 
     private Transaction handleTransferTransaction(TransactionInput transactionInput) {
@@ -91,20 +94,20 @@ public class TransactionService {
         accountFrom.getTransactions().add(transaction);
         subtractFromBalance(accountFrom, transaction.getAmount());
         addToBalance(accountTo, transaction.getAmount());
-        return transaction;
+        return transactionRepository.save(transaction);
     }
 
     private Transaction handleExpenseTransaction(TransactionInput transactionInput) {
         Account accountFrom = accountService.getAccount(transactionInput.accountFromHash());
         Category category = categoryService.getCategory(transactionInput.categoryHash());
         if (category.getIncome()) {
-            log.debug("category is not for \"expense\"");
+            log.warn("category is not for \"expense\"");
             throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
         }
         Transaction transaction = Transaction.of(transactionInput, accountFrom, null, category);
         accountFrom.getTransactions().add(transaction);
         subtractFromBalance(accountFrom, transaction.getAmount());
-        return transaction;
+        return transactionRepository.save(transaction);
     }
 
     @SneakyThrows
@@ -187,10 +190,15 @@ public class TransactionService {
     }
 
     private void subtractFromBalance(Account account, Double amount) {
-        account.setBalance(account.getBalance() + amount);
+        account.setBalance(account.getBalance() - amount);
     }
 
     private void addToBalance(Account account, Double amount) {
         account.setBalance(account.getBalance() + amount);
+    }
+
+    public Transaction updateTransaction(
+            String hash, TransactionUpdateInput transactionUpdateInput) {
+        return null;
     }
 }

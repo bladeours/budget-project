@@ -13,9 +13,11 @@ type Query {
 type Mutation {
     addAccount(accountInput: AccountInput!): Account
     deleteAccount(hash: String!, removeSub: Boolean!): Boolean
+    updateAccount(hash: String!, accountInput: AccountInput!): Account
 
     addTransaction(transactionInput: TransactionInput!): Transaction
     deleteTransaction(hash: String!): Boolean
+    updateTransaction(hash: String!, transactionUpdateInput: TransactionUpdateInput!): Transaction
 
     addCategory(categoryInput: CategoryInput): Category
     deleteCategory(hash: String!): Boolean

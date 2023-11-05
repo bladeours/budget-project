@@ -2,10 +2,12 @@ package com.budget.project.controller;
 
 import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Category;
-import com.budget.project.model.dto.request.CategoryInput;
 import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.service.CategoryService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

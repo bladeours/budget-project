@@ -19,4 +19,5 @@ input CategoryInput {
     color: String!
     income: Boolean!
     parentId: Int
+    archived: Boolean
 }

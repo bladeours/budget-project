@@ -1,11 +1,15 @@
 package com.budget.project.model.db;
 
-import com.budget.project.model.dto.request.TransactionInput;
+import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.utils.DateUtils;
+
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
+
 import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -13,7 +17,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transaction {
-    @Id @GeneratedValue private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
     private String name;
 
@@ -42,7 +48,8 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    @ManyToOne private Category category;
+    @ManyToOne
+    private Category category;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -66,5 +73,18 @@ public class Transaction {
                 .currency(transactionInput.currency())
                 .transactionType(transactionInput.transactionType())
                 .build();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Transaction that = (Transaction) object;
+        return Objects.equals(hash, that.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hash);
     }
 }

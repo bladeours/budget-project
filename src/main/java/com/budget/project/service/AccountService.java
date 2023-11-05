@@ -5,20 +5,26 @@ import com.budget.project.filter.model.Filter;
 import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.dto.request.AccountInput;
+import com.budget.project.model.db.User;
 import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.repository.AccountRepository;
+
 import jakarta.transaction.Transactional;
-import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -49,12 +55,18 @@ public class AccountService {
             }
             account = Account.of(accountInput, userService.getLoggedUser(), parent);
             account = accountRepository.save(account);
-            parent.getSubAccounts().add(account);
+            if(Objects.isNull(parent.getSubAccounts())){
+                parent.setSubAccounts( List.of(account));
+            }else {
+                parent.getSubAccounts().add(account);
+            }
         } else {
             account = Account.of(accountInput, userService.getLoggedUser());
             account = accountRepository.save(account);
         }
-        userService.getLoggedUser().getAccounts().add(account);
+        User user = userService.getLoggedUser();
+        user.getAccounts().add(account);
+
         return account;
     }
 
@@ -72,12 +84,11 @@ public class AccountService {
     public Account getAccount(String hash) {
         return accountRepository
                 .findByHashAndUsersContainingIgnoreCase(hash, userService.getLoggedUser())
-                .orElseThrow(
-                        () -> {
-                            log.warn("can't find account with hash: {}", hash);
-                            return new AppException(
-                                    "can't find account with hash: " + hash, HttpStatus.NOT_FOUND);
-                        });
+                .orElseThrow(() -> {
+                    log.warn("can't find account with hash: {}", hash);
+                    return new AppException(
+                            "can't find account with hash: " + hash, HttpStatus.NOT_FOUND);
+                });
     }
 
     @SneakyThrows
@@ -94,7 +105,7 @@ public class AccountService {
         for (Account child : account.getSubAccounts()) {
             if (removeSub) {
                 deleteAccount(child.getHash(), false);
-             } else {
+            } else {
                 child.setParent(null);
             }
         }
@@ -107,5 +118,34 @@ public class AccountService {
 
     private Boolean loggedUserHasAccess(Account account) {
         return account.getUsers().contains(userService.getLoggedUser());
+    }
+
+    public Account updateAccount(String hash, AccountInput accountInput) {
+        Account account = this.getAccount(hash);
+        if (parentChanged(accountInput.parentHash(), account)) {
+            if (Objects.nonNull(account.getParent())) {
+                account.getParent().getSubAccounts().remove(account);
+            }
+            Account newParent = this.getAccount(accountInput.parentHash());
+            account.setParent(newParent);
+            newParent.getSubAccounts().add(account);
+        }
+
+        account = account.toBuilder()
+                .accountType(accountInput.accountType())
+                .archived(accountInput.archived())
+                .description(accountInput.description())
+                .balance(accountInput.balance())
+                .color(accountInput.color())
+                .name(accountInput.name())
+                .currency(accountInput.currency())
+                .build();
+        accountRepository.save(account);
+        return account;
+    }
+
+    private boolean parentChanged(String parentHash, Account account) {
+        return(Objects.isNull(parentHash) && Objects.nonNull(account.getParent())) || (Objects.nonNull(account.getParent())
+                        && !parentHash.equals(account.getParent().getHash()));
     }
 }

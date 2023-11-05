@@ -16,6 +16,19 @@ input TransactionInput {
     transactionType: TransactionType!
     categoryHash: String
     currency: Currency!
+    note: String
+}
+
+input TransactionUpdateInput {
+    name: String!
+    amount: Float!
+    date: String!
+    need: Boolean!
+    accountToHash: String
+    accountFromHash: String
+    categoryHash: String
+    currency: Currency!
+    note: String
 }
 
 type Transaction {

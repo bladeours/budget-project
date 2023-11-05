@@ -9,6 +9,8 @@ import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Component
 @Slf4j
 public class CustomExceptionResolver  extends DataFetcherExceptionResolverAdapter {
@@ -31,9 +33,9 @@ public class CustomExceptionResolver  extends DataFetcherExceptionResolverAdapte
         } else {
             log.error("" + ex);
             return null;
-//            GraphqlErrorBuilder.newError()
+//            return GraphqlErrorBuilder.newError()
 //                    .errorType(ErrorType.INTERNAL_ERROR)
-//                    .message(ex.getMessage())
+//                    .message(Objects.requireNonNullElse(ex.getMessage(), "no message"))
 //                    .path(env.getExecutionStepInfo().getPath())
 //                    .location(env.getField().getSourceLocation())
 //                    .build();

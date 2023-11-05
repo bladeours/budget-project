@@ -5,20 +5,22 @@ import com.budget.project.filter.model.Filter;
 import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.dto.request.CategoryInput;
 import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.service.repository.CategoryRepository;
+
 import jakarta.transaction.Transactional;
-import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -34,12 +36,11 @@ public class CategoryService {
     public Category getCategory(String hash) {
         return categoryRepository
                 .findCategoryByHashAndUsersContainingIgnoreCase(hash, userService.getLoggedUser())
-                .orElseThrow(
-                        () -> {
-                            log.debug("can't find category with hash: {}", hash);
-                            return new AppException(
-                                    "can't find category with hash: " + hash, HttpStatus.NOT_FOUND);
-                        });
+                .orElseThrow(() -> {
+                    log.debug("can't find category with hash: {}", hash);
+                    return new AppException(
+                            "can't find category with hash: " + hash, HttpStatus.NOT_FOUND);
+                });
     }
 
     public Category createCategory(CategoryInput categoryInput) {

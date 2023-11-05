@@ -3,9 +3,12 @@ package com.budget.project.controller;
 import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.CustomPage;
-import com.budget.project.model.dto.request.TransactionInput;
+import com.budget.project.model.dto.request.input.TransactionInput;
+import com.budget.project.model.dto.request.input.TransactionUpdateInput;
 import com.budget.project.service.TransactionService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -34,6 +37,11 @@ public class TransactionController {
     @MutationMapping
     public Transaction addTransaction(@Argument TransactionInput transactionInput) {
         return transactionService.createTransaction(transactionInput);
+    }
+
+    @MutationMapping
+    public Transaction updateTransaction(@Argument TransactionUpdateInput transactionUpdateInput, @Argument String hash) {
+        return transactionService.updateTransaction(hash, transactionUpdateInput);
     }
 
     @MutationMapping

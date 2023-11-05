@@ -1,19 +1,23 @@
 package com.budget.project.model.db;
 
-import com.budget.project.model.dto.request.AccountInput;
+import com.budget.project.model.dto.request.input.AccountInput;
+
 import jakarta.persistence.*;
-import java.util.*;
 
 import lombok.*;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Entity
 @Data
-@EqualsAndHashCode
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    @Id @GeneratedValue private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -33,6 +37,7 @@ public class Account {
     private List<Account> subAccounts = new ArrayList<>();
 
     @ManyToOne
+    @ToString.Exclude
     private Account parent;
 
     @Column(nullable = false, unique = true)
@@ -52,17 +57,17 @@ public class Account {
     private List<User> users = new ArrayList<>();
 
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "accountFrom")
-    private Set<Transaction> transactions = new HashSet<>();
+    @ToString.Exclude
+    @OneToMany(mappedBy = "accountFrom", cascade = CascadeType.ALL)
+    private List<Transaction> transactions = new ArrayList<>();
 
     public static Account of(AccountInput accountInput, User user, Account parent) {
-        return Account.of(accountInput, user)
-                .toBuilder()
-                .parent(parent)
-                .build();
+        return Account.of(accountInput, user).toBuilder().parent(parent).build();
     }
+
     public static Account of(AccountInput accountInput, User user) {
-        return Account.builder()
+        Account account = new Account();
+        return account.toBuilder()
                 .color(accountInput.color())
                 .accountType(accountInput.accountType())
                 .hash(UUID.randomUUID().toString())
@@ -73,5 +78,22 @@ public class Account {
                 .balance(accountInput.balance())
                 .users(List.of(user))
                 .build();
+    }
+
+    public void removeTransaction(Transaction transaction){
+        this.transactions.remove(transaction);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Account account = (Account) object;
+        return Objects.equals(hash, account.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hash);
     }
 }

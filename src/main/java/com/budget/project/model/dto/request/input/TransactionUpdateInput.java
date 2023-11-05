@@ -1,4 +1,4 @@
-package com.budget.project.model.dto.request;
+package com.budget.project.model.dto.request.input;
 
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.db.TransactionType;
@@ -6,7 +6,7 @@ import lombok.Builder;
 import org.springframework.lang.NonNull;
 
 @Builder(toBuilder = true)
-public record TransactionInput(
+public record TransactionUpdateInput(
         String name,
         String note,
         @NonNull Double amount,
@@ -16,4 +16,6 @@ public record TransactionInput(
         String accountFromHash,
         @NonNull TransactionType transactionType,
         String categoryHash,
-        @NonNull Currency currency) {}
+        @NonNull Currency currency
+) {
+}

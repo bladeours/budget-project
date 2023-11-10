@@ -21,8 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -46,18 +44,11 @@ public class AccountService {
                 throw new AppException(
                         "only one level of subAccounts is possible", HttpStatus.BAD_REQUEST);
             }
-            if (!loggedUserHasAccess(parent)) {
-                log.debug(
-                        "{} doesn't have access to parent: {}",
-                        userService.getLoggedUser().getEmail(),
-                        parent.getHash());
-                throw new AppException(HttpStatus.FORBIDDEN);
-            }
             account = Account.of(accountInput, userService.getLoggedUser(), parent);
             account = accountRepository.save(account);
-            if(Objects.isNull(parent.getSubAccounts())){
-                parent.setSubAccounts( List.of(account));
-            }else {
+            if (Objects.isNull(parent.getSubAccounts())) {
+                parent.setSubAccounts(Set.of(account));
+            } else {
                 parent.getSubAccounts().add(account);
             }
         } else {
@@ -94,14 +85,6 @@ public class AccountService {
     @SneakyThrows
     public void deleteAccount(String hash, Boolean removeSub) {
         Account account = this.getAccount(hash);
-        if (!loggedUserHasAccess(account)) {
-            log.debug(
-                    "{} doesn't have access to account: {}",
-                    userService.getLoggedUser().getEmail(),
-                    account.getHash());
-            throw new AppException(HttpStatus.FORBIDDEN);
-        }
-
         for (Account child : account.getSubAccounts()) {
             if (removeSub) {
                 deleteAccount(child.getHash(), false);
@@ -114,10 +97,6 @@ public class AccountService {
         }
         userService.getLoggedUser().getAccounts().remove(account);
         accountRepository.delete(account);
-    }
-
-    private Boolean loggedUserHasAccess(Account account) {
-        return account.getUsers().contains(userService.getLoggedUser());
     }
 
     public Account updateAccount(String hash, AccountInput accountInput) {
@@ -140,12 +119,12 @@ public class AccountService {
                 .name(accountInput.name())
                 .currency(accountInput.currency())
                 .build();
-        accountRepository.save(account);
-        return account;
+        return accountRepository.save(account);
     }
 
     private boolean parentChanged(String parentHash, Account account) {
-        return(Objects.isNull(parentHash) && Objects.nonNull(account.getParent())) || (Objects.nonNull(account.getParent())
+        return (Objects.isNull(parentHash) && Objects.nonNull(account.getParent()))
+                || (Objects.nonNull(account.getParent())
                         && !parentHash.equals(account.getParent().getHash()));
     }
 }

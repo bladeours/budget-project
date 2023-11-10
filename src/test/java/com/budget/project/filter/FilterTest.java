@@ -1,5 +1,8 @@
 package com.budget.project.filter;
 
+import static com.budget.project.utils.TestUtils.*;
+import static com.budget.project.utils.TestUtils.USER_1;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -7,23 +10,23 @@ import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
-import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.AccountService;
-import com.budget.project.service.repository.UserRepository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
-import java.util.Objects;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ActiveProfiles("test")
 public class FilterTest {
 
     @Autowired
@@ -38,19 +41,14 @@ public class FilterTest {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private UserRepository userRepository;
+    @BeforeEach
+    void setUp() {
+        registerUsers(authService, authenticationManager);
+    }
 
     @Test
     public void nestedFilterTest() {
-        if (Objects.isNull(userRepository.findByEmail("jd"))) {
-            var authenticationRequest = new AuthenticationRequest("jd", "123");
-            authService.register(authenticationRequest);
-            var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    authenticationRequest.email(), authenticationRequest.password()));
-        } else {
-            authService.authenticate(new AuthenticationRequest("jd", "123"));
-        }
+        login(USER_1, authService);
 
         Account account_1 = accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.REGULAR)

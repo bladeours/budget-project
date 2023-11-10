@@ -76,7 +76,7 @@ public class Bootstrap implements ApplicationRunner {
                 .build());
         Category category1 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .parentId(null)
+                .parentHash(null)
                 .color("#ffffff")
                 .name("category_1")
                 .archived(false)

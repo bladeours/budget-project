@@ -8,7 +8,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -16,6 +15,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Transaction {
     @Id
     @GeneratedValue
@@ -33,6 +33,7 @@ public class Transaction {
 
     private Boolean need;
 
+    @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true)
     private String hash;
 
@@ -48,7 +49,7 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     private Category category;
 
     @Column(nullable = false)
@@ -73,18 +74,5 @@ public class Transaction {
                 .currency(transactionInput.currency())
                 .transactionType(transactionInput.transactionType())
                 .build();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
-        Transaction that = (Transaction) object;
-        return Objects.equals(hash, that.hash);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(hash);
     }
 }

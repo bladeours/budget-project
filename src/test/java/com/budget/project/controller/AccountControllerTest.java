@@ -1,5 +1,13 @@
 package com.budget.project.controller;
 
+import static com.budget.project.utils.TestUtils.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
+import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
+
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Account;
@@ -10,7 +18,9 @@ import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.TransactionService;
 import com.budget.project.utils.TestUtils;
+
 import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +31,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-
-import static com.budget.project.utils.TestUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
-import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
+import java.util.Set;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -57,7 +60,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldCreateAccount_whenGetProperInput() {
-        login("jd", authService);
+        login(USER_1, authService);
         // language=GraphQL
         String mutation =
                 """
@@ -90,7 +93,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldReturnError_whenMoreThanOneLevelSubAccount() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account accountParent = accountService.createAccount(getAccountInput("parent"));
         Account accountChild = accountService.createAccount(getAccountInput("child").toBuilder()
                 .parentHash(accountParent.getHash())
@@ -122,7 +125,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldGetAccount_whenGetProperRequest() {
-        login("jd", authService);
+        login(USER_1, authService);
 
         Account expectedAccount = accountService.createAccount(getAccountInput(""));
         // language=GraphQL
@@ -154,7 +157,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldNotGetAccount_whenAccountIsForDifferentUser() {
-        login("jd", authService);
+        login(USER_1, authService);
 
         Account expectedAccount = accountService.createAccount(getAccountInput(""));
         // language=GraphQL
@@ -168,7 +171,7 @@ public class AccountControllerTest {
 				    }
 				}
 				""";
-        login("jd_2", authService);
+        login(USER_2, authService);
         graphQlTester
                 .document(query)
                 .variable("hash", expectedAccount.getHash())
@@ -179,9 +182,9 @@ public class AccountControllerTest {
 
     @Test
     void shouldGetAccountsPage_whenGetProperRequest() {
-        login("jd_2", authService);
+        login(USER_2, authService);
         accountService.createAccount(getAccountInput("name_1"));
-        login("jd", authService);
+        login(USER_1, authService);
         Account expectedAccount_2 = accountService.createAccount(getAccountInput("name_2"));
         Account expectedAccount_3 = accountService.createAccount(getAccountInput("name_3"));
         Account expectedAccount_4 = accountService.createAccount(getAccountInput("name_4"));
@@ -255,7 +258,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldRemoveAccount_whenGetProperInput() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account accountTo = accountService.createAccount(getAccountInput("test"));
         Account accountFrom = accountService.createAccount(getAccountInput("test"));
         Transaction transaction = transactionService.createTransaction(
@@ -280,7 +283,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldRemoveAccountAndSubAccounts_whenGetProperInput() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account accountParent = accountService.createAccount(getAccountInput("parent"));
         Account accountChild = accountService.createAccount(getAccountInput("child").toBuilder()
                 .parentHash(accountParent.getHash())
@@ -310,7 +313,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldUpdateAccount_whenGetProperInput() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account account = accountService.createAccount(getAccountInput("name_1"));
 
         AccountInput accountInput = AccountInput.builder()
@@ -348,7 +351,7 @@ public class AccountControllerTest {
 
     @Test
     void shouldReturnError_whenUserCanNotUpdateAccount() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account account = accountService.createAccount(getAccountInput("name_1"));
 
         AccountInput accountInput = AccountInput.builder()
@@ -360,7 +363,7 @@ public class AccountControllerTest {
                 .name("new_name")
                 .balance(31.13)
                 .build();
-        login("jd_2", authService);
+        login(USER_2, authService);
         // language=Graphql
         String mutation =
                 """
@@ -384,7 +387,7 @@ public class AccountControllerTest {
     @Test
     @Transactional
     void shouldUpdateAccountParent_whenGetProperInput() {
-        login("jd", authService);
+        login(USER_1, authService);
         Account oldParent = accountService.createAccount(getAccountInput("old parent"));
         Account account = accountService.createAccount(AccountInput.builder()
                 .parentHash(oldParent.getHash())
@@ -428,9 +431,9 @@ public class AccountControllerTest {
 
         Account actualAccount = accountService.getAccount(account.getHash());
 
-        List<Account> newParentSubAccounts =
+        Set<Account> newParentSubAccounts =
                 accountService.getAccount(newParent.getHash()).getSubAccounts();
-        List<Account> oldParentSubAccounts =
+        Set<Account> oldParentSubAccounts =
                 accountService.getAccount(oldParent.getHash()).getSubAccounts();
         assertAll(
                 () -> assertThat(actualAccount.getParent()).isEqualTo(newParent),

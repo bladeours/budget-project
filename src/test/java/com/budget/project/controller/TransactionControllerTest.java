@@ -1,14 +1,25 @@
 package com.budget.project.controller;
 
+import static com.budget.project.utils.TestUtils.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
+import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
+
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
+import com.budget.project.model.dto.request.input.TransactionUpdateInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
 import com.budget.project.service.TransactionService;
+
 import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +29,6 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-
-import static com.budget.project.utils.TestUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
-import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -79,11 +83,13 @@ public class TransactionControllerTest {
                         toMap(getTransactionInputExpense(category.getHash(), account.getHash())))
                 .execute()
                 .path("data.addTransaction")
-                .entity(Transaction.class).get();
+                .entity(Transaction.class)
+                .get();
         assertAll(
-                () -> assertThat(transactionService.getTransaction(transaction.getHash())).isNotNull(),
-                () -> assertThat(accountService.getAccount(account.getHash()).getBalance()).isEqualTo(account.getBalance() - transaction.getAmount())
-        );
+                () -> assertThat(transactionService.getTransaction(transaction.getHash()))
+                        .isNotNull(),
+                () -> assertThat(accountService.getAccount(account.getHash()).getBalance())
+                        .isEqualTo(account.getBalance() - transaction.getAmount()));
     }
 
     @Test
@@ -107,15 +113,20 @@ public class TransactionControllerTest {
                 .document(mutation)
                 .variable(
                         "input",
-                        toMap(getTransactionInputTransfer(accountTo.getHash(), accountFrom.getHash())))
+                        toMap(getTransactionInputTransfer(
+                                accountTo.getHash(), accountFrom.getHash())))
                 .execute()
                 .path("data.addTransaction")
-                .entity(Transaction.class).get();
+                .entity(Transaction.class)
+                .get();
         assertAll(
-                () -> assertThat(transactionService.getTransaction(transaction.getHash())).isNotNull(),
-                () -> assertThat(accountService.getAccount(accountFrom.getHash()).getBalance()).isEqualTo(accountFrom.getBalance() - transaction.getAmount()),
-                () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance()).isEqualTo(accountTo.getBalance() + transaction.getAmount())
-        );
+                () -> assertThat(transactionService.getTransaction(transaction.getHash()))
+                        .isNotNull(),
+                () -> assertThat(
+                                accountService.getAccount(accountFrom.getHash()).getBalance())
+                        .isEqualTo(accountFrom.getBalance() - transaction.getAmount()),
+                () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance())
+                        .isEqualTo(accountTo.getBalance() + transaction.getAmount()));
     }
 
     @Test
@@ -142,11 +153,13 @@ public class TransactionControllerTest {
                         toMap(getTransactionInputIncome(category.getHash(), accountTo.getHash())))
                 .execute()
                 .path("data.addTransaction")
-                .entity(Transaction.class).get();
+                .entity(Transaction.class)
+                .get();
         assertAll(
-                () -> assertThat(transactionService.getTransaction(transaction.getHash())).isNotNull(),
-                () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance()).isEqualTo(accountTo.getBalance() + transaction.getAmount())
-        );
+                () -> assertThat(transactionService.getTransaction(transaction.getHash()))
+                        .isNotNull(),
+                () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance())
+                        .isEqualTo(accountTo.getBalance() + transaction.getAmount()));
     }
 
     @Test
@@ -208,15 +221,19 @@ public class TransactionControllerTest {
         login(USER_2, authService);
         Account account_jd_2 = accountService.createAccount(getAccountInput(""));
         Category category_jd_2 = categoryService.createCategory(getCategoryInput(false));
-        transactionService.createTransaction(getTransactionInputExpense(category_jd_2.getHash(), account_jd_2.getHash()));
+        transactionService.createTransaction(
+                getTransactionInputExpense(category_jd_2.getHash(), account_jd_2.getHash()));
         login(USER_1, authService);
         Account account_jd = accountService.createAccount(getAccountInput(""));
         Category category_jd = categoryService.createCategory(getCategoryInput(false));
-        Transaction transaction_jd1 = transactionService.createTransaction(getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
-        Transaction transaction_jd2 = transactionService.createTransaction(getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
-        Transaction transaction_jd3 = transactionService.createTransaction(getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
+        Transaction transaction_jd1 = transactionService.createTransaction(
+                getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
+        Transaction transaction_jd2 = transactionService.createTransaction(
+                getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
+        Transaction transaction_jd3 = transactionService.createTransaction(
+                getTransactionInputExpense(category_jd.getHash(), account_jd.getHash()));
 
-        //language=Graphql
+        // language=Graphql
         String query =
                 """
                 query {
@@ -280,7 +297,8 @@ public class TransactionControllerTest {
         login(USER_1, authService);
         Account account = accountService.createAccount(getAccountInput(""));
         Category category = categoryService.createCategory(getCategoryInput(false));
-        Transaction expectedTransaction = transactionService.createTransaction(getTransactionInputExpense(category.getHash(), account.getHash()));
+        Transaction expectedTransaction = transactionService.createTransaction(
+                getTransactionInputExpense(category.getHash(), account.getHash()));
         // language=GraphQL
         String query =
                 """
@@ -302,10 +320,12 @@ public class TransactionControllerTest {
                 .get();
 
         assertAll(
-                () -> assertThat(actualTransaction.getHash()).isEqualTo(expectedTransaction.getHash()),
+                () -> assertThat(actualTransaction.getHash())
+                        .isEqualTo(expectedTransaction.getHash()),
                 () -> assertThat(actualTransaction.getAmount())
                         .isEqualTo(expectedTransaction.getAmount()),
-                () -> assertThat(actualTransaction.getName()).isEqualTo(expectedTransaction.getName()));
+                () -> assertThat(actualTransaction.getName())
+                        .isEqualTo(expectedTransaction.getName()));
     }
 
     @Test
@@ -313,7 +333,8 @@ public class TransactionControllerTest {
         login(USER_1, authService);
         Account account = accountService.createAccount(getAccountInput(""));
         Category category = categoryService.createCategory(getCategoryInput(false));
-        Transaction expectedTransaction = transactionService.createTransaction(getTransactionInputExpense(category.getHash(), account.getHash()));
+        Transaction expectedTransaction = transactionService.createTransaction(
+                getTransactionInputExpense(category.getHash(), account.getHash()));
         login(USER_2, authService);
         // language=GraphQL
         String query =
@@ -341,7 +362,8 @@ public class TransactionControllerTest {
         login(USER_1, authService);
         Account accountFrom = accountService.createAccount(getAccountInput("essa"));
         Account accountTo = accountService.createAccount(getAccountInput("essa"));
-        Transaction expectedTransaction = transactionService.createTransaction(getTransactionInputTransfer(accountTo.getHash(), accountFrom.getHash()));
+        Transaction expectedTransaction = transactionService.createTransaction(
+                getTransactionInputTransfer(accountTo.getHash(), accountFrom.getHash()));
 
         // language=GraphQL
         String mutation =
@@ -350,12 +372,70 @@ public class TransactionControllerTest {
 				    deleteTransaction(hash: $hash)
 				}
 				""";
-        graphQlTester.document(mutation).variable("hash", expectedTransaction.getHash()).execute();
+        graphQlTester
+                .document(mutation)
+                .variable("hash", expectedTransaction.getHash())
+                .execute();
         assertAll(
-                () -> assertThrows(AppException.class, () -> transactionService.getTransaction(expectedTransaction.getHash())),
-                () -> assertThat(accountService.getAccount(accountFrom.getHash()).getTransactions()).isEmpty(),
-                () -> assertThat(accountService.getAccount(accountTo.getHash()).getTransactions()).isEmpty()
-        );
+                () -> assertThrows(
+                        AppException.class,
+                        () -> transactionService.getTransaction(expectedTransaction.getHash())),
+                () -> assertThat(
+                                accountService.getAccount(accountFrom.getHash()).getTransactions())
+                        .isEmpty(),
+                () -> assertThat(accountService.getAccount(accountTo.getHash()).getTransactions())
+                        .isEmpty());
+    }
 
+    @Test
+    void shouldUpdateTransaction_whenGetProperInput() {
+        login(USER_1, authService);
+        Account oldAccountFrom = accountService.createAccount(getAccountInput("essa"));
+        Account newAccountFrom = accountService.createAccount(getAccountInput("essa"));
+        Category category = categoryService.createCategory(getCategoryInput(false));
+        Transaction transactionBefore = transactionService.createTransaction(
+                getTransactionInputExpense(category.getHash(), oldAccountFrom.getHash()));
+
+        TransactionUpdateInput transactionUpdateInput = TransactionUpdateInput.builder()
+                .date(transactionBefore.getDate().toString())
+                .name("new_name")
+                .need(true)
+                .currency(transactionBefore.getCurrency())
+                .accountFromHash(newAccountFrom.getHash())
+                .categoryHash(category.getHash())
+                .amount(transactionBefore.getAmount() + 10.0)
+                .build();
+        // language=GraphQL
+        String mutation =
+                """
+        mutation($input: TransactionUpdateInput!, $hash: String!) {
+            updateTransaction(hash: $hash, transactionUpdateInput: $input){
+            hash
+            }
+        }
+        """;
+        graphQlTester
+                .document(mutation)
+                .variable("hash", transactionBefore.getHash())
+                .variable("input", toMap(transactionUpdateInput))
+                .execute()
+                .path("data.updateTransaction");
+
+        assertAll(
+                () -> assertThat(transactionService
+                                .getTransaction(transactionBefore.getHash())
+                                .getAmount())
+                        .isEqualTo(transactionUpdateInput.amount()),
+                () -> assertThat(accountService
+                                .getAccount(oldAccountFrom.getHash())
+                                .getBalance())
+                        .isEqualTo(oldAccountFrom.getBalance()),
+                () -> assertThat(accountService
+                                .getAccount(newAccountFrom.getHash())
+                                .getBalance())
+                        .isEqualTo(newAccountFrom.getBalance()
+                                - transactionBefore.getAmount()
+                                - (transactionUpdateInput.amount()
+                                        - transactionBefore.getAmount())));
     }
 }

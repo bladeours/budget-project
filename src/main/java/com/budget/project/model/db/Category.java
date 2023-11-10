@@ -4,20 +4,16 @@ import com.budget.project.model.dto.request.input.CategoryInput;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Category {
     @Id
     @GeneratedValue
@@ -28,13 +24,19 @@ public class Category {
 
     private String color;
 
+    @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true)
     private String hash;
 
     @Column(nullable = false)
     private Boolean income;
 
-    private Long parentId;
+    @ManyToOne
+    @ToString.Exclude
+    private Category parent;
+
+    @OneToMany
+    private Set<Category> subCategories = new HashSet<>();
 
     @Column(nullable = false)
     private Boolean archived;
@@ -42,7 +44,7 @@ public class Category {
     @ManyToMany(mappedBy = "categories")
     private Set<User> users = new HashSet<>();
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", cascade = CascadeType.DETACH)
     private Set<Transaction> transactions = new HashSet<>();
 
     @OneToMany(mappedBy = "category")
@@ -53,10 +55,13 @@ public class Category {
                 .name(categoryInput.name())
                 .color(categoryInput.color())
                 .income(categoryInput.income())
-                .parentId(categoryInput.parentId())
                 .users(Set.of(user))
                 .hash(UUID.randomUUID().toString())
                 .archived(categoryInput.archived())
                 .build();
+    }
+
+    public static Category of(CategoryInput categoryInput, User user, Category parent) {
+        return Category.of(categoryInput, user).toBuilder().parent(parent).build();
     }
 }

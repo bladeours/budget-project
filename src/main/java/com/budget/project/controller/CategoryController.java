@@ -4,6 +4,7 @@ import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.model.dto.request.input.CategoryInput;
+import com.budget.project.model.dto.request.input.CategoryUpdateInput;
 import com.budget.project.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class CategoryController {
     }
 
     @MutationMapping
-    public Category addCategory(CategoryInput categoryInput) {
+    public Category addCategory(@Argument CategoryInput categoryInput) {
         return categoryService.createCategory(categoryInput);
     }
 
@@ -39,5 +40,11 @@ public class CategoryController {
     public Boolean deleteCategory(@Argument String hash) {
         categoryService.deleteCategory(hash);
         return true;
+    }
+
+    @MutationMapping
+    public Category updateCategory(
+            @Argument String hash, @Argument CategoryUpdateInput categoryUpdateInput) {
+        return categoryService.updateCategory(hash, categoryUpdateInput);
     }
 }

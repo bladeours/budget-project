@@ -18,6 +18,12 @@ input CategoryInput {
     name: String!
     color: String!
     income: Boolean!
-    parentId: Int
+    parentHash: String
+    archived: Boolean
+}
+
+input CategoryUpdateInput {
+    name: String!
+    color: String!
     archived: Boolean
 }

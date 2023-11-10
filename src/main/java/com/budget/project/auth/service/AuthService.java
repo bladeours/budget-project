@@ -7,7 +7,7 @@ import com.budget.project.model.db.User;
 import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.security.JwtService;
 import com.budget.project.service.repository.UserRepository;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +18,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -31,49 +33,29 @@ public class AuthService {
 
     @SneakyThrows
     public AuthenticationResponse register(AuthenticationRequest request) {
-        if(userRepository.findByEmail(request.email()).isPresent()){
-            throw new AppException("user with email: " + request.email() + " already exists", HttpStatus.CONFLICT);
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new AppException(
+                    "user with email: " + request.email() + " already exists", HttpStatus.CONFLICT);
         }
         User user = new User();
-        user =
-                user.toBuilder()
-                        .email(request.email())
-                        .password(passwordEncoder.encode(request.password()))
-                        .role(Role.USER)
-                        .hash(UUID.randomUUID().toString())
-                        .build();
+        user = user.toBuilder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .role(Role.USER)
+                .hash(UUID.randomUUID().toString())
+                .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return new AuthenticationResponse(jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var auth =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.email(), request.password()));
+        var auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         SecurityContextHolder.getContext().setAuthentication(auth);
         User user = userRepository.findByEmail(request.email()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
 
         return new AuthenticationResponse(jwtToken);
     }
-
-    //    @SneakyThrows
-    //    public AuthenticationResponse refreshToken(String token) {
-    //        RefreshToken refreshToken =
-    //                refreshTokenService
-    //                        .findByToken(token)
-    //                        .orElseThrow(
-    //                                () -> {
-    //                                    log.debug("token: {} is not present in database", token);
-    //                                    return new AppException(
-    //                                            "incorrect token", HttpStatus.BAD_REQUEST);
-    //                                });
-    //        refreshTokenService.verifyExpiration(refreshToken);
-    //
-    //        return new AuthenticationResponse(
-    //                jwtService.generateToken(userService.getLoggedUser()),
-    //                refreshTokenService.createRefreshTokenAndRemoveOld().getToken());
-    //    }
 }

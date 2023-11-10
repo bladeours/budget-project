@@ -7,6 +7,7 @@ import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.model.dto.request.input.CategoryInput;
+import com.budget.project.model.dto.request.input.CategoryUpdateInput;
 import com.budget.project.service.repository.CategoryRepository;
 
 import jakarta.transaction.Transactional;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -44,8 +46,31 @@ public class CategoryService {
     }
 
     public Category createCategory(CategoryInput categoryInput) {
-        Category category = Category.of(categoryInput, userService.getLoggedUser());
-        category = categoryRepository.save(category);
+        Category category;
+        if (Objects.nonNull(categoryInput.parentHash())) {
+            Category parent = this.getCategory(categoryInput.parentHash());
+            if (Objects.nonNull(parent.getParent())) {
+                log.warn("only one level of subCategories is possible");
+                throw new AppException(
+                        "only one level of subCategories is possible", HttpStatus.BAD_REQUEST);
+            }
+            if (!categoryInput.income().equals(parent.getIncome())) {
+                log.warn("subCategory must have the same type");
+                throw new AppException(
+                        "subCategory must have the same type", HttpStatus.BAD_REQUEST);
+            }
+            category = Category.of(categoryInput, userService.getLoggedUser(), parent);
+            category = categoryRepository.save(category);
+            parent.setSubCategories(Set.of(category));
+            //            if (Objects.isNull(parent.getSubAccounts())) {
+            //                parent.setSubAccounts(List.of(account));
+            //            } else {
+            //                parent.getSubAccounts().add(account);
+            //            }
+        } else {
+            category = Category.of(categoryInput, userService.getLoggedUser());
+            category = categoryRepository.save(category);
+        }
         userService.getLoggedUser().getCategories().add(category);
         return category;
     }
@@ -62,9 +87,23 @@ public class CategoryService {
 
     public void deleteCategory(String hash) {
         Category category = this.getCategory(hash);
+        for (Category child : category.getSubCategories()) {
+            deleteCategory(child.getHash());
+        }
         for (Transaction transaction : category.getTransactions()) {
             transactionService.deleteTransaction(transaction);
         }
+        userService.getLoggedUser().getCategories().remove(category);
         categoryRepository.delete(category);
+    }
+
+    public Category updateCategory(String hash, CategoryUpdateInput categoryUpdateInput) {
+        Category category = this.getCategory(hash);
+        category = category.toBuilder()
+                .name(categoryUpdateInput.name())
+                .color(categoryUpdateInput.color())
+                .archived(categoryUpdateInput.archived())
+                .build();
+        return categoryRepository.save(category);
     }
 }

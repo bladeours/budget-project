@@ -21,7 +21,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class securityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;

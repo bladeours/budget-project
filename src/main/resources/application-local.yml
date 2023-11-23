@@ -9,4 +9,4 @@ logging:
   level:
     org.hibernate.orm.jdbc.bind: trace
     root: WARN
-    org.springframework.security: TRACE
+    org.springframework.security: WARN

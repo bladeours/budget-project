@@ -7,10 +7,15 @@ type Query {
 
     getCategoriesPage(page: Page!, filter: Filter): CategoriesPage
     getCategory(hash: String!): Category
-
 }
 
+
 type Mutation {
+    register(authInput: AuthInput!): JwtResponse
+    authenticate(authInput: AuthInput!): JwtResponse
+    refreshToken: JwtResponse
+    logout: Boolean
+
     addAccount(accountInput: AccountInput!): Account
     deleteAccount(hash: String!, removeSub: Boolean!): Boolean
     updateAccount(hash: String!, accountInput: AccountInput!): Account

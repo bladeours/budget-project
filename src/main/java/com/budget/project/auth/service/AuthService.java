@@ -1,10 +1,10 @@
 package com.budget.project.auth.service;
 
-import com.budget.project.auth.model.dto.AuthenticationResponse;
+import com.budget.project.auth.model.dto.AuthInput;
+import com.budget.project.auth.model.dto.JwtResponse;
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Role;
 import com.budget.project.model.db.User;
-import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.security.JwtService;
 import com.budget.project.service.repository.UserRepository;
 
@@ -32,7 +32,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     @SneakyThrows
-    public AuthenticationResponse register(AuthenticationRequest request) {
+    public JwtResponse register(AuthInput request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new AppException(
                     "user with email: " + request.email() + " already exists", HttpStatus.CONFLICT);
@@ -46,16 +46,16 @@ public class AuthService {
                 .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return new AuthenticationResponse(jwtToken);
+        return new JwtResponse(jwtToken);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public JwtResponse authenticate(AuthInput request) {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         SecurityContextHolder.getContext().setAuthentication(auth);
         User user = userRepository.findByEmail(request.email()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
 
-        return new AuthenticationResponse(jwtToken);
+        return new JwtResponse(jwtToken);
     }
 }

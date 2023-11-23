@@ -1,8 +1,8 @@
 package com.budget.project.config;
 
+import com.budget.project.auth.model.dto.AuthInput;
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.*;
-import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
@@ -35,7 +35,7 @@ public class Bootstrap implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        var authenticationRequest = new AuthenticationRequest("jd", "123");
+        var authenticationRequest = new AuthInput("jd", "123");
         System.out.println(
                 "JWTTOKEN: " + authService.register(authenticationRequest).jwt());
         var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(

@@ -1,0 +1,8 @@
+type JwtResponse {
+    jwt: String!
+}
+
+input AuthInput {
+    email: String!
+    password: String!
+}

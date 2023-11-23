@@ -2,9 +2,8 @@ package com.budget.project.security;
 
 import com.budget.project.exception.model.CustomForbiddenEntryPoint;
 
-import java.util.List;
-
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,6 +17,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity(debug = true)
@@ -28,20 +29,13 @@ public class securityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        authorizationRequest ->
-                                authorizationRequest
-                                        .requestMatchers("/api/auth/register", "/api/auth/authenticate",
-                                                "/api/auth/refreshtoken", "/graphiql", "/vendor/**", "/graphql/**")
-                                        .permitAll()
-                                        .anyRequest().authenticated())
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorizationRequest -> authorizationRequest
+                        .requestMatchers("/graphiql", "/vendor/**", "/graphql")
+                        .permitAll())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(
-                        exceptionHandling ->
-                                exceptionHandling.authenticationEntryPoint(
-                                        new CustomForbiddenEntryPoint()))
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(new CustomForbiddenEntryPoint()))
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

@@ -1,10 +1,10 @@
 package com.budget.project.utils;
 
+import com.budget.project.auth.model.dto.AuthInput;
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.db.TransactionType;
-import com.budget.project.model.dto.request.AuthenticationRequest;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
@@ -38,7 +38,7 @@ public class TestUtils {
     }
 
     public static void login(String email, AuthService authService) {
-        authService.authenticate(new AuthenticationRequest(email, "123"));
+        authService.authenticate(new AuthInput(email, "123"));
     }
 
     public static AccountInput getAccountInput(String name) {
@@ -105,11 +105,11 @@ public class TestUtils {
 
     public static void registerUsers(
             AuthService authService, AuthenticationManager authenticationManager) {
-        var authenticationRequest = new AuthenticationRequest(USER_1, "123");
+        var authenticationRequest = new AuthInput(USER_1, "123");
         authService.register(authenticationRequest);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 authenticationRequest.email(), authenticationRequest.password()));
-        authenticationRequest = new AuthenticationRequest(USER_2, "123");
+        authenticationRequest = new AuthInput(USER_2, "123");
         authService.register(authenticationRequest);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 authenticationRequest.email(), authenticationRequest.password()));

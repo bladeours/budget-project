@@ -1,0 +1,29 @@
+type CategoriesPage {
+    content: [Category]
+    number: Int
+    size: Int
+    totalElements: Int
+    totalPages: Int
+}
+
+type Category {
+    name: String
+    color: String
+    hash: String
+    income: Boolean
+    parentId: Int
+}
+
+input CategoryInput {
+    name: String!
+    color: String!
+    income: Boolean!
+    parentHash: String
+    archived: Boolean
+}
+
+input CategoryUpdateInput {
+    name: String!
+    color: String!
+    archived: Boolean
+}

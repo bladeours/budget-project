@@ -1,0 +1,37 @@
+type Query {
+    getAccountsPage(page: Page!, filter: Filter): AccountsPage
+    getAccount(hash: String!): Account
+
+    getTransactionsPage(page: Page!, filter: Filter): TransactionsPage
+    getTransaction(hash: String!): Transaction
+
+    getCategoriesPage(page: Page!, filter: Filter): CategoriesPage
+    getCategory(hash: String!): Category
+
+}
+
+type Mutation {
+    addAccount(accountInput: AccountInput!): Account
+    deleteAccount(hash: String!, removeSub: Boolean!): Boolean
+    updateAccount(hash: String!, accountInput: AccountInput!): Account
+
+    addTransaction(transactionInput: TransactionInput!): Transaction
+    deleteTransaction(hash: String!): Boolean
+    updateTransaction(hash: String!, transactionUpdateInput: TransactionUpdateInput!): Transaction
+
+    addCategory(categoryInput: CategoryInput!): Category
+    deleteCategory(hash: String!): Boolean
+    updateCategory(hash: String!, categoryUpdateInput: CategoryUpdateInput!): Category
+}
+
+
+input Page {
+    number: Int!
+    size: Int!
+}
+
+enum Currency {
+    PLN
+    EUR
+}
+

@@ -1,0 +1,48 @@
+input Filter {
+    stringFilters: [StringExpression]
+    doubleFilters: [DoubleExpression]
+    dateFilters: [DateExpression]
+    logicOperator: LogicOperator
+    subFilters: [Filter]
+}
+
+enum LogicOperator {
+    AND,
+    OR
+}
+
+input DoubleExpression {
+    field: String!
+    operator: NumberOperator!
+    value: Float!
+}
+
+enum NumberOperator {
+    EQ,
+    GT,
+    GTE,
+    LT,
+    LTE
+}
+
+input StringExpression {
+    field: String!
+    operator: StringOperator!
+    value: String!
+}
+
+enum StringOperator {
+    EQUALS
+    CONTAINS
+}
+
+input DateExpression {
+    field: String!
+    operator: DateOperator!
+    values: [String]!
+}
+
+enum DateOperator {
+    BETWEEN
+}
+

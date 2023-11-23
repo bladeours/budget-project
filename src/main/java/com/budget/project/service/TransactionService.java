@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -163,13 +164,13 @@ public class TransactionService {
     }
 
     public Page<Transaction> getTransactionsPage(CustomPage page, Filter filter) {
-        if (Objects.isNull(filter)) {
+        PageRequest pageRequest = PageRequest.of(page.number(), page.size(), Sort.by("date").descending());
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
             return transactionRepository.findTransactionsForUser(
-                    userService.getLoggedUser(), PageRequest.of(page.number(), page.size()));
+                    userService.getLoggedUser(), pageRequest);
         }
         return transactionRepository.findAll(
-                filterService.getSpecification(filter, Transaction.class),
-                PageRequest.of(page.number(), page.size()));
+                filterService.getSpecification(filter, Transaction.class),pageRequest);
     }
 
     public Transaction getTransaction(String hash) {

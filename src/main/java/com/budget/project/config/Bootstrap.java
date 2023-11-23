@@ -46,15 +46,15 @@ public class Bootstrap implements ApplicationRunner {
                 .balance(21.36)
                 .currency(Currency.PLN)
                 .color("#ffffff")
-                .name("test_1")
+                .name("account_1")
                 .description("test_1_desc")
                 .build());
-        accountService.createAccount(AccountInput.builder()
+        var account2 = accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.SAVINGS)
                 .balance(1.2)
                 .currency(Currency.PLN)
                 .color("33")
-                .name("test_1_sub_1")
+                .name("account2_sub_1")
                 .description("test_1_desc_sub_1")
                 .parentHash(account1.getHash())
                 .build());
@@ -78,14 +78,30 @@ public class Bootstrap implements ApplicationRunner {
                 .income(false)
                 .parentHash(null)
                 .color("#ffffff")
-                .name("category_1")
+                .name("Public Transport")
                 .archived(false)
                 .build());
+        Category category2 = categoryService.createCategory(CategoryInput.builder()
+                .income(false)
+                .parentHash(null)
+                .color("#ffffff")
+                .name("Food")
+                .archived(false)
+                .build());
+
+        Category category3 = categoryService.createCategory(CategoryInput.builder()
+                .income(true)
+                .parentHash(null)
+                .color("#ffffff")
+                .name("Food")
+                .archived(false)
+                .build());
+
 
         Transaction transaction1 = transactionService.createTransaction(TransactionInput.builder()
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
-                .amount(10.0)
+                .amount(7.50)
                 .date("2023-11-01T15:20:10")
                 .need(false)
                 .categoryHash(category1.getHash())
@@ -95,7 +111,7 @@ public class Bootstrap implements ApplicationRunner {
         Transaction transaction2 = transactionService.createTransaction(TransactionInput.builder()
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
-                .amount(10.0)
+                .amount(10.40)
                 .date("2022-11-01T15:20:10")
                 .need(false)
                 .categoryHash(category1.getHash())
@@ -105,12 +121,47 @@ public class Bootstrap implements ApplicationRunner {
         Transaction transaction3 = transactionService.createTransaction(TransactionInput.builder()
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
-                .amount(10.0)
+                .amount(21.12)
                 .date("2023-10-01T15:20:10")
                 .need(false)
-                .categoryHash(category1.getHash())
+                .categoryHash(category2.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_3")
                 .build());
+
+        Transaction transaction4 = transactionService.createTransaction(TransactionInput.builder()
+                .transactionType(TransactionType.TRANSFER)
+                .accountFromHash(account1.getHash())
+                .accountToHash(account2.getHash())
+                .amount(21.12)
+                .date("2023-10-01T15:20:10")
+                .need(false)
+                .currency(Currency.PLN)
+                .name("transaction_3")
+                .build());
+
+        Transaction transaction5 = transactionService.createTransaction(TransactionInput.builder()
+                .transactionType(TransactionType.INCOME)
+                .accountToHash(account1.getHash())
+                .amount(75.42)
+                .date("2023-10-01T15:20:10")
+                .need(false)
+                .categoryHash(category3.getHash())
+                .currency(Currency.PLN)
+                .name("transaction_3")
+                .build());
+
+        for (int i=0; i<50; i++){
+            transactionService.createTransaction(TransactionInput.builder()
+                    .transactionType(TransactionType.INCOME)
+                    .accountToHash(account1.getHash())
+                    .amount(75.42)
+                    .date("2023-10-01T15:20:10")
+                    .need(false)
+                    .categoryHash(category3.getHash())
+                    .currency(Currency.PLN)
+                    .name("transaction_3")
+                    .build());
+        }
     }
 }

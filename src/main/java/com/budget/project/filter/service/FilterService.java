@@ -33,7 +33,7 @@ public class FilterService {
                 Predicate userPredicate = getUserPredicate(tClass, criteriaBuilder, root);
                 return criteriaBuilder.and(predicate, userPredicate);
             } catch (Exception ex) {
-                log.debug(
+                log.warn(
                         "Problem with creating JPA specification, exception message: {}",
                         ex.getMessage());
                 throw new AppException(HttpStatus.BAD_REQUEST);

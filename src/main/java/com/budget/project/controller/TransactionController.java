@@ -4,7 +4,6 @@ import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
-import com.budget.project.model.dto.request.input.TransactionUpdateInput;
 import com.budget.project.service.TransactionService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,8 +39,8 @@ public class TransactionController {
     }
 
     @MutationMapping
-    public Transaction updateTransaction(@Argument TransactionUpdateInput transactionUpdateInput, @Argument String hash) {
-        return transactionService.updateTransaction(hash, transactionUpdateInput);
+    public Transaction updateTransaction(@Argument TransactionInput transactionInput, @Argument String hash) {
+        return transactionService.updateTransaction(hash, transactionInput);
     }
 
     @MutationMapping

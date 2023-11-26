@@ -24,7 +24,7 @@ type Mutation {
 
     addTransaction(transactionInput: TransactionInput!): Transaction
     deleteTransaction(hash: String!): Boolean
-    updateTransaction(hash: String!, transactionUpdateInput: TransactionUpdateInput!): Transaction
+    updateTransaction(hash: String!, transactionInput: TransactionInput!): Transaction
 
     addCategory(categoryInput: CategoryInput!): Category
     deleteCategory(hash: String!): Boolean

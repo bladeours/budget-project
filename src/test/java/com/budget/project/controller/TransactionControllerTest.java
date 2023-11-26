@@ -3,8 +3,7 @@ package com.budget.project.controller;
 import static com.budget.project.utils.TestUtils.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
 import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
 
@@ -13,7 +12,8 @@ import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.dto.request.input.TransactionUpdateInput;
+import com.budget.project.model.db.TransactionType;
+import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
 import com.budget.project.service.TransactionService;
@@ -388,7 +388,7 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void shouldUpdateTransaction_whenGetProperInput() {
+    void shouldUpdateExpenseTransaction_whenTypeNotChange() {
         login(USER_1, authService);
         Account oldAccountFrom = accountService.createAccount(getAccountInput("essa"));
         Account newAccountFrom = accountService.createAccount(getAccountInput("essa"));
@@ -396,20 +396,21 @@ public class TransactionControllerTest {
         Transaction transactionBefore = transactionService.createTransaction(
                 getTransactionInputExpense(category.getHash(), oldAccountFrom.getHash()));
 
-        TransactionUpdateInput transactionUpdateInput = TransactionUpdateInput.builder()
-                .date(transactionBefore.getDate().toString())
+        TransactionInput transactionUpdateInput = TransactionInput.builder()
+                .date(transactionBefore.getDate().toString() + "Z")
                 .name("new_name")
                 .need(true)
                 .currency(transactionBefore.getCurrency())
                 .accountFromHash(newAccountFrom.getHash())
                 .categoryHash(category.getHash())
                 .amount(transactionBefore.getAmount() + 10.0)
+                .transactionType(TransactionType.EXPENSE)
                 .build();
         // language=GraphQL
         String mutation =
                 """
-        mutation($input: TransactionUpdateInput!, $hash: String!) {
-            updateTransaction(hash: $hash, transactionUpdateInput: $input){
+        mutation($input: TransactionInput!, $hash: String!) {
+            updateTransaction(hash: $hash, transactionInput: $input){
             hash
             }
         }
@@ -430,12 +431,60 @@ public class TransactionControllerTest {
                                 .getAccount(oldAccountFrom.getHash())
                                 .getBalance())
                         .isEqualTo(oldAccountFrom.getBalance()),
+                () -> assertEquals(accountService
+                        .getAccount(newAccountFrom.getHash())
+                        .getBalance(), newAccountFrom.getBalance()
+                        - transactionUpdateInput.amount(), 0.0001));
+    }
+
+    @Test
+    void shouldUpdateExpenseTransaction_whenTypeChange() {
+        login(USER_1, authService);
+        Account oldAccountFrom = accountService.createAccount(getAccountInput("essa"));
+        Account newAccountTo = accountService.createAccount(getAccountInput("essa"));
+        Category category = categoryService.createCategory(getCategoryInput(false));
+        Category categoryIncome = categoryService.createCategory(getCategoryInput(true));
+        Transaction transactionBefore = transactionService.createTransaction(
+                getTransactionInputExpense(category.getHash(), oldAccountFrom.getHash()));
+
+        TransactionInput transactionUpdateInput = TransactionInput.builder()
+                .date(transactionBefore.getDate().toString() + "Z")
+                .name("new_name")
+                .need(true)
+                .currency(transactionBefore.getCurrency())
+                .accountToHash(newAccountTo.getHash())
+                .categoryHash(categoryIncome.getHash())
+                .amount(transactionBefore.getAmount() + 10.0)
+                .transactionType(TransactionType.INCOME)
+                .build();
+        // language=GraphQL
+        String mutation =
+                """
+        mutation($input: TransactionInput!, $hash: String!) {
+            updateTransaction(hash: $hash, transactionInput: $input){
+            hash
+            }
+        }
+        """;
+        graphQlTester
+                .document(mutation)
+                .variable("hash", transactionBefore.getHash())
+                .variable("input", toMap(transactionUpdateInput))
+                .execute()
+                .path("data.updateTransaction");
+
+        assertAll(
+                () -> assertThat(transactionService
+                        .getTransaction(transactionBefore.getHash())
+                        .getAmount())
+                        .isEqualTo(transactionUpdateInput.amount()),
                 () -> assertThat(accountService
-                                .getAccount(newAccountFrom.getHash())
-                                .getBalance())
-                        .isEqualTo(newAccountFrom.getBalance()
-                                - transactionBefore.getAmount()
-                                - (transactionUpdateInput.amount()
-                                        - transactionBefore.getAmount())));
+                        .getAccount(oldAccountFrom.getHash())
+                        .getBalance())
+                        .isEqualTo(oldAccountFrom.getBalance()),
+                () -> assertEquals(accountService
+                        .getAccount(newAccountTo.getHash())
+                        .getBalance(), newAccountTo.getBalance()
+                        + transactionUpdateInput.amount(), 0.0001));
     }
 }

@@ -15,6 +15,8 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class CategoryController {
@@ -24,6 +26,11 @@ public class CategoryController {
     @QueryMapping
     public Page<Category> getCategoriesPage(@Argument CustomPage page, @Argument Filter filter) {
         return categoryService.getCategoriesPage(page, filter);
+    }
+
+    @QueryMapping
+    public List<Category> getCategories(@Argument Filter filter) {
+        return categoryService.getCategories(filter);
     }
 
     @QueryMapping

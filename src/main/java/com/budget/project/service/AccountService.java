@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -62,13 +63,21 @@ public class AccountService {
     }
 
     public Page<Account> getAccountsPage(CustomPage page, Filter filter) {
-        if (Objects.isNull(filter)) {
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
             return accountRepository.findAllByUsersContaining(
                     PageRequest.of(page.number(), page.size()), userService.getLoggedUser());
         }
         return accountRepository.findAll(
                 filterService.getSpecification(filter, Account.class),
                 PageRequest.of(page.number(), page.size()));
+    }
+
+    public List<Account> getAccounts(Filter filter) {
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
+            return accountRepository.findAllByUsersContaining(userService.getLoggedUser());
+        }
+        return accountRepository.findAll(
+                filterService.getSpecification(filter, Account.class));
     }
 
     @SneakyThrows
@@ -127,4 +136,6 @@ public class AccountService {
                 || (Objects.nonNull(account.getParent())
                         && !parentHash.equals(account.getParent().getHash()));
     }
+
+
 }

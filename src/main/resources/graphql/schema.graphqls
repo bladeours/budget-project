@@ -1,11 +1,13 @@
 type Query {
     getAccountsPage(page: Page!, filter: Filter): AccountsPage
+    getAccounts(filter: Filter): [Account]
     getAccount(hash: String!): Account
 
     getTransactionsPage(page: Page!, filter: Filter): TransactionsPage
     getTransaction(hash: String!): Transaction
 
     getCategoriesPage(page: Page!, filter: Filter): CategoriesPage
+    getCategories(filter: Filter): [Category]
     getCategory(hash: String!): Category
 }
 

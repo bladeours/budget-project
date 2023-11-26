@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,12 +62,11 @@ public class CategoryService {
             }
             category = Category.of(categoryInput, userService.getLoggedUser(), parent);
             category = categoryRepository.save(category);
-            parent.setSubCategories(Set.of(category));
-            //            if (Objects.isNull(parent.getSubAccounts())) {
-            //                parent.setSubAccounts(List.of(account));
-            //            } else {
-            //                parent.getSubAccounts().add(account);
-            //            }
+            if (Objects.isNull(parent.getSubCategories())) {
+                parent.setSubCategories(Set.of(category));
+            } else {
+                parent.getSubCategories().add(category);
+            }
         } else {
             category = Category.of(categoryInput, userService.getLoggedUser());
             category = categoryRepository.save(category);
@@ -76,13 +76,21 @@ public class CategoryService {
     }
 
     public Page<Category> getCategoriesPage(CustomPage page, Filter filter) {
-        if (Objects.isNull(filter)) {
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
             return categoryRepository.findAllByUsersContaining(
                     PageRequest.of(page.number(), page.size()), userService.getLoggedUser());
         }
         return categoryRepository.findAll(
                 filterService.getSpecification(filter, Category.class),
                 PageRequest.of(page.number(), page.size()));
+    }
+
+    public List<Category> getCategories(Filter filter) {
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
+            return categoryRepository.findAllByUsersContaining(userService.getLoggedUser());
+        }
+        return categoryRepository.findAll(
+                filterService.getSpecification(filter, Category.class));
     }
 
     public void deleteCategory(String hash) {
@@ -106,4 +114,6 @@ public class CategoryService {
                 .build();
         return categoryRepository.save(category);
     }
+
+
 }

@@ -2,6 +2,8 @@ package com.budget.project.service.repository;
 
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.User;
+
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +16,6 @@ public interface AccountRepository
         extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
 
     Page<Account> findAllByUsersContaining(PageRequest pageRequest, User user);
-
+    List<Account> findAllByUsersContaining(User user);
     Optional<Account> findByHashAndUsersContainingIgnoreCase(String hash, User user);
 }

@@ -58,6 +58,16 @@ public class Bootstrap implements ApplicationRunner {
                 .description("test_1_desc_sub_1")
                 .parentHash(account1.getHash())
                 .build());
+
+        var account3 = accountService.createAccount(AccountInput.builder()
+                .accountType(AccountType.SAVINGS)
+                .balance(1.2)
+                .currency(Currency.PLN)
+                .color("33")
+                .name("account3_sub_1")
+                .description("test_1_desc_sub_1")
+                .parentHash(account1.getHash())
+                .build());
         accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.SAVINGS)
                 .balance(14.21)
@@ -75,13 +85,38 @@ public class Bootstrap implements ApplicationRunner {
                 .description("test_2_desc")
                 .build());
         Category category1 = categoryService.createCategory(CategoryInput.builder()
-                .income(false)
+                .income(true)
                 .parentHash(null)
                 .color("#ffffff")
-                .name("Public Transport")
+                .name("Salary")
                 .archived(false)
                 .build());
+
+        Category category1_1 = categoryService.createCategory(CategoryInput.builder()
+                .income(true)
+                .parentHash(category1.getHash())
+                .color("#ffffff")
+                .name("Glovo")
+                .archived(false)
+                .build());
+
+        Category category1_2 = categoryService.createCategory(CategoryInput.builder()
+                .income(true)
+                .parentHash(category1.getHash())
+                .color("#ffffff")
+                .name("Atos")
+                .archived(false)
+                .build());
+
         Category category2 = categoryService.createCategory(CategoryInput.builder()
+                .income(true)
+                .parentHash(null)
+                .color("#ffffff")
+                .name("Other")
+                .archived(false)
+                .build());
+
+        Category category3 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
                 .parentHash(null)
                 .color("#ffffff")
@@ -89,11 +124,26 @@ public class Bootstrap implements ApplicationRunner {
                 .archived(false)
                 .build());
 
-        Category category3 = categoryService.createCategory(CategoryInput.builder()
-                .income(true)
-                .parentHash(null)
+        Category category4 = categoryService.createCategory(CategoryInput.builder()
+                .income(false)
+                .parentHash(category3.getHash())
                 .color("#ffffff")
-                .name("Food")
+                .name("Restaurant")
+                .archived(false)
+                .build());
+
+        Category category5 = categoryService.createCategory(CategoryInput.builder()
+                .income(false)
+                .parentHash(category3.getHash())
+                .color("#ffffff")
+                .name("Grocery")
+                .archived(false)
+                .build());
+
+        Category category6 = categoryService.createCategory(CategoryInput.builder()
+                .income(false)
+                .color("#ffffff")
+                .name("Entertainment")
                 .archived(false)
                 .build());
 
@@ -102,9 +152,9 @@ public class Bootstrap implements ApplicationRunner {
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
                 .amount(7.50)
-                .date("2023-11-01T15:20:10")
+                .date("2023-11-01T15:20:10.000Z")
                 .need(false)
-                .categoryHash(category1.getHash())
+                .categoryHash(category5.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_1")
                 .build());
@@ -112,9 +162,9 @@ public class Bootstrap implements ApplicationRunner {
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
                 .amount(10.40)
-                .date("2022-11-01T15:20:10")
+                .date("2022-11-01T15:20:10Z")
                 .need(false)
-                .categoryHash(category1.getHash())
+                .categoryHash(category5.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_2")
                 .build());
@@ -122,9 +172,9 @@ public class Bootstrap implements ApplicationRunner {
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(account1.getHash())
                 .amount(21.12)
-                .date("2023-10-01T15:20:10")
+                .date("2023-10-01T15:20:10Z")
                 .need(false)
-                .categoryHash(category2.getHash())
+                .categoryHash(category5.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_3")
                 .build());
@@ -134,7 +184,7 @@ public class Bootstrap implements ApplicationRunner {
                 .accountFromHash(account1.getHash())
                 .accountToHash(account2.getHash())
                 .amount(21.12)
-                .date("2023-10-01T15:20:10")
+                .date("2023-10-01T15:20:10Z")
                 .need(false)
                 .currency(Currency.PLN)
                 .name("transaction_3")
@@ -144,9 +194,9 @@ public class Bootstrap implements ApplicationRunner {
                 .transactionType(TransactionType.INCOME)
                 .accountToHash(account1.getHash())
                 .amount(75.42)
-                .date("2023-10-01T15:20:10")
+                .date("2023-10-01T15:20:10Z")
                 .need(false)
-                .categoryHash(category3.getHash())
+                .categoryHash(category1.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_3")
                 .build());
@@ -156,9 +206,9 @@ public class Bootstrap implements ApplicationRunner {
                     .transactionType(TransactionType.INCOME)
                     .accountToHash(account1.getHash())
                     .amount(75.42)
-                    .date("2023-10-01T15:20:10")
+                    .date("2023-10-01T15:20:10Z")
                     .need(false)
-                    .categoryHash(category3.getHash())
+                    .categoryHash(category1.getHash())
                     .currency(Currency.PLN)
                     .name("transaction_3")
                     .build());

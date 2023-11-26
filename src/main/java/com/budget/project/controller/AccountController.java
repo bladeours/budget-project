@@ -14,6 +14,8 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class AccountController {
@@ -23,6 +25,11 @@ public class AccountController {
     @QueryMapping
     public Page<Account> getAccountsPage(@Argument CustomPage page, @Argument Filter filter) {
         return accountService.getAccountsPage(page, filter);
+    }
+
+    @QueryMapping
+    public List<Account> getAccounts(@Argument Filter filter) {
+        return accountService.getAccounts(filter);
     }
 
     @QueryMapping

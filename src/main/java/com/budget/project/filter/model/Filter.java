@@ -5,6 +5,7 @@ import java.util.*;
 
 public record Filter(
         Set<StringExpression> stringFilters,
+        Set<BooleanExpression> booleanFilters,
         Set<DoubleExpression> doubleFilters,
         Set<DateExpression> dateFilters,
         LogicOperator logicOperator,

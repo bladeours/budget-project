@@ -12,7 +12,9 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+
 import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -68,9 +70,11 @@ public class FilterService {
         if (Objects.nonNull(filter.dateFilters())) {
             predicates.addAll(getDatePredicates(filter.dateFilters(), criteriaBuilder, root));
         }
-
         if (Objects.nonNull(filter.doubleFilters())) {
             predicates.addAll(getDoublePredicates(filter.doubleFilters(), criteriaBuilder, root));
+        }
+        if (Objects.nonNull(filter.booleanFilters())) {
+            predicates.addAll(getBooleanPredicates(filter.booleanFilters(), criteriaBuilder, root));
         }
 
         if (filter.subFilters() != null) {
@@ -98,6 +102,16 @@ public class FilterService {
                 return null;
             }
         }
+    }
+
+    private <T> List<Predicate> getBooleanPredicates(
+            Set<BooleanExpression> booleanExpressions, CriteriaBuilder criteriaBuilder, Root<T> root) {
+        List<Predicate> predicates = new ArrayList<>();
+        for (BooleanExpression booleanExpression : booleanExpressions) {
+            predicates.add(criteriaBuilder.equal(
+                    root.get(booleanExpression.field()),booleanExpression.value()));
+        }
+        return predicates;
     }
 
     private <T> List<Predicate> getStringPredicates(

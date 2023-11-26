@@ -1,9 +1,16 @@
 input Filter {
     stringFilters: [StringExpression]
     doubleFilters: [DoubleExpression]
+    booleanFilters: [BooleanExpression]
     dateFilters: [DateExpression]
     logicOperator: LogicOperator
     subFilters: [Filter]
+
+}
+
+input BooleanExpression {
+    field: String!
+    value: Boolean!
 }
 
 enum LogicOperator {

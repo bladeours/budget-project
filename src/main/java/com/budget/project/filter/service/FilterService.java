@@ -6,21 +6,23 @@ import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.db.User;
+import com.budget.project.service.CategoryService;
 import com.budget.project.service.UserService;
 import com.budget.project.utils.DateUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 
-import java.util.*;
+import jakarta.persistence.criteria.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,8 +30,10 @@ import org.springframework.stereotype.Service;
 public class FilterService {
     private final UserService userService;
 
-    public <T> Specification<T> getSpecification(Filter filter, Class<T> tClass) {
+
+    public <T> Specification<T> getSpecification(Filter oldFilter, Class<T> tClass) {
         return (root, query, criteriaBuilder) -> {
+            final Filter filter = normalizeFilter(oldFilter);
             try {
                 Predicate predicate = toPredicate(filter, criteriaBuilder, root);
                 Predicate userPredicate = getUserPredicate(tClass, criteriaBuilder, root);
@@ -61,8 +65,10 @@ public class FilterService {
         }
     }
 
-    private <T> Predicate toPredicate(Filter filter, CriteriaBuilder criteriaBuilder, Root<T> root)
+    private <T> Predicate toPredicate(Filter oldFilter, CriteriaBuilder criteriaBuilder, Root<T> root)
             throws InvalidDataAccessApiUsageException {
+        final Filter filter = normalizeFilter(oldFilter);
+
         List<Predicate> predicates = new ArrayList<>();
         if (Objects.nonNull(filter.stringFilters())) {
             predicates.addAll(getStringPredicates(filter.stringFilters(), criteriaBuilder, root));
@@ -104,12 +110,23 @@ public class FilterService {
         }
     }
 
+    private Filter normalizeFilter(Filter filter){
+        if(Objects.nonNull(filter.subFilters())){
+            filter = filter.toBuilder()
+                    .subFilters(filter.subFilters().stream()
+                            .filter(f -> Objects.nonNull(f) && Objects.nonNull(f.logicOperator()))
+                            .collect(Collectors.toSet())).build();
+        }
+        return filter;
+    }
     private <T> List<Predicate> getBooleanPredicates(
-            Set<BooleanExpression> booleanExpressions, CriteriaBuilder criteriaBuilder, Root<T> root) {
+            Set<BooleanExpression> booleanExpressions,
+            CriteriaBuilder criteriaBuilder,
+            Root<T> root) {
         List<Predicate> predicates = new ArrayList<>();
         for (BooleanExpression booleanExpression : booleanExpressions) {
             predicates.add(criteriaBuilder.equal(
-                    root.get(booleanExpression.field()),booleanExpression.value()));
+                    root.get(booleanExpression.field()), booleanExpression.value()));
         }
         return predicates;
     }
@@ -119,17 +136,29 @@ public class FilterService {
             throws InvalidDataAccessApiUsageException {
         List<Predicate> predicates = new ArrayList<>();
         for (StringExpression stringExpression : stringExpressions) {
+            Expression expression = getField(stringExpression.field(), root);
             switch (stringExpression.operator()) {
                 case EQUALS -> predicates.add(
-                        criteriaBuilder.equal(
-                                root.get(stringExpression.field()), stringExpression.value()));
+                        criteriaBuilder.equal(expression, stringExpression.value()));
+
                 case CONTAINS -> predicates.add(
-                        criteriaBuilder.like(
-                                root.get(stringExpression.field()),
-                                "%" + stringExpression.value() + "%"));
+                        criteriaBuilder.like(expression, "%" + stringExpression.value() + "%"));
             }
         }
         return predicates;
+    }
+
+    private Expression<?> getField(String field, Root<?> root) {
+        Path<?> path = null;
+        for (String splittedField : field.split("\\.")) {
+            if (path == null) {
+                path = root.get(splittedField);
+            } else {
+                path = path.get(splittedField);
+            }
+        }
+
+        return path;
     }
 
     private <T> List<Predicate> getDoublePredicates(
@@ -138,22 +167,18 @@ public class FilterService {
             Root<T> root) {
         List<Predicate> predicates = new ArrayList<>();
         for (DoubleExpression doubleExpression : doubleExpressions) {
+            Expression expression = getField(doubleExpression.field(), root);
             switch (doubleExpression.operator()) {
                 case EQ -> predicates.add(
-                        criteriaBuilder.equal(
-                                root.get(doubleExpression.field()), doubleExpression.value()));
+                        criteriaBuilder.equal(expression, doubleExpression.value()));
                 case LT -> predicates.add(
-                        criteriaBuilder.lessThan(
-                                root.get(doubleExpression.field()), doubleExpression.value()));
+                        criteriaBuilder.lessThan(expression, doubleExpression.value()));
                 case GT -> predicates.add(
-                        criteriaBuilder.greaterThan(
-                                root.get(doubleExpression.field()), doubleExpression.value()));
+                        criteriaBuilder.greaterThan(expression, doubleExpression.value()));
                 case GTE -> predicates.add(
-                        criteriaBuilder.greaterThanOrEqualTo(
-                                root.get(doubleExpression.field()), doubleExpression.value()));
+                        criteriaBuilder.greaterThanOrEqualTo(expression, doubleExpression.value()));
                 case LTE -> predicates.add(
-                        criteriaBuilder.lessThanOrEqualTo(
-                                root.get(doubleExpression.field()), doubleExpression.value()));
+                        criteriaBuilder.lessThanOrEqualTo(expression, doubleExpression.value()));
             }
         }
         return predicates;
@@ -163,12 +188,12 @@ public class FilterService {
             Set<DateExpression> dateExpressions, CriteriaBuilder criteriaBuilder, Root<T> root) {
         List<Predicate> predicates = new ArrayList<>();
         for (DateExpression dateExpression : dateExpressions) {
+            Expression expression = getField(dateExpression.field(), root);
             switch (dateExpression.operator()) {
-                case BETWEEN -> predicates.add(
-                        criteriaBuilder.between(
-                                root.get(dateExpression.field()),
-                                DateUtils.parse(dateExpression.values().get(0)),
-                                DateUtils.parse(dateExpression.values().get(1))));
+                case BETWEEN -> predicates.add(criteriaBuilder.between(
+                        expression,
+                        DateUtils.parse(dateExpression.values().get(0)),
+                        DateUtils.parse(dateExpression.values().get(1))));
             }
         }
         return predicates;

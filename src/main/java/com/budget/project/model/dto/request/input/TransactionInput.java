@@ -18,4 +18,5 @@ public record TransactionInput(
         String accountFromHash,
         @NonNull TransactionType transactionType,
         String categoryHash,
+        String subCategoryHash,
         @NonNull Currency currency) {}

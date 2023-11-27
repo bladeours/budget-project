@@ -15,6 +15,7 @@ input TransactionInput {
     accountFromHash: String
     transactionType: TransactionType!
     categoryHash: String
+    subCategoryHash: String
     currency: Currency!
     note: String
 }
@@ -31,6 +32,7 @@ type Transaction {
     accountFrom: Account
     transactionType: TransactionType
     category: Category
+    subCategory: Category
 }
 
 enum TransactionType {

@@ -154,7 +154,8 @@ public class Bootstrap implements ApplicationRunner {
                 .amount(7.50)
                 .date("2023-11-01T15:20:10.000Z")
                 .need(false)
-                .categoryHash(category5.getHash())
+                .categoryHash(category3.getHash())
+                .subCategoryHash(category5.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_1")
                 .build());

@@ -52,6 +52,9 @@ public class Transaction {
     @ManyToOne(cascade = CascadeType.DETACH)
     private Category category;
 
+    @ManyToOne(cascade = CascadeType.DETACH)
+    private Category subCategory;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Currency currency;
@@ -60,7 +63,9 @@ public class Transaction {
             TransactionInput transactionInput,
             Account accountFrom,
             Account accountTo,
-            Category category) {
+            Category category,
+            Category subCategory
+    ) {
         return Transaction.builder()
                 .name(transactionInput.name())
                 .note(transactionInput.note())
@@ -71,6 +76,7 @@ public class Transaction {
                 .accountTo(accountTo)
                 .accountFrom(accountFrom)
                 .category(category)
+                .subCategory(subCategory)
                 .currency(transactionInput.currency())
                 .transactionType(transactionInput.transactionType())
                 .build();

@@ -7,11 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.budget.project.auth.service.AuthService;
-import com.budget.project.model.db.Account;
-import com.budget.project.model.db.AccountType;
-import com.budget.project.model.db.Currency;
+import com.budget.project.model.db.*;
 import com.budget.project.model.dto.request.input.AccountInput;
+import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.service.AccountService;
+import com.budget.project.service.CategoryService;
+import com.budget.project.service.TransactionService;
+import com.budget.project.utils.TestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,8 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -40,6 +44,12 @@ public class FilterTest {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @BeforeEach
     void setUp() {
@@ -132,5 +142,125 @@ public class FilterTest {
                                 .anyMatch(a -> a.getHash().equals(account_3.getHash())))
                         .isTrue(),
                 () -> assertThat(accounts.get()).hasSize(2));
+    }
+
+    @Test
+    public void transactionFilterTest() {
+        login(USER_1, authService);
+
+        Account account_1 = accountService.createAccount(AccountInput.builder()
+                .accountType(AccountType.REGULAR)
+                .balance(21.36)
+                .currency(Currency.PLN)
+                .color("#ffffff")
+                .name("test_1")
+                .description("test_1_desc")
+                .build());
+        Category category = categoryService.createCategory(CategoryInput.builder()
+                .name("name_category")
+                .income(true)
+                .color("434")
+                .archived(false)
+                .build());
+
+        Transaction transaction = transactionService.createTransaction(
+                TestUtils.getTransactionInputIncome(category.getHash(), account_1.getHash()));
+
+        // language=GraphQL
+        String query =
+                """
+                query($hash: String!){
+                  getTransactionsPage(
+                    page: {number: 0, size: 10}
+                    filter:
+                        {
+                            logicOperator: AND,
+                            stringFilters: [{
+                            	operator: EQUALS
+                          	 	value: $hash
+                          	 	field: "category.hash"
+                          	 }
+                            ]
+                            }
+                  ) {
+                    content {
+                        hash
+                        name
+                    }
+                  }
+                }
+                """;
+        List<Transaction> transactions = graphQlTester
+                .document(query)
+                .variable("hash", category.getHash())
+                .execute()
+                .path("data.getTransactionsPage.content")
+                .entityList(Transaction.class)
+                .get();
+        assertAll(
+                () -> assertThat(transactions.stream()
+                                .anyMatch(a -> a.getHash().equals(transaction.getHash())))
+                        .isTrue(),
+                () -> assertThat(transactions).hasSize(1));
+    }
+
+    @Test
+    public void transactionFilterTest2() {
+        login(USER_1, authService);
+
+        Account account_1 = accountService.createAccount(AccountInput.builder()
+                .accountType(AccountType.REGULAR)
+                .balance(21.36)
+                .currency(Currency.PLN)
+                .color("#ffffff")
+                .name("test_1")
+                .description("test_1_desc")
+                .build());
+        Category category = categoryService.createCategory(CategoryInput.builder()
+                .name("name_category")
+                .income(true)
+                .color("434")
+                .archived(false)
+                .build());
+
+        Transaction transaction = transactionService.createTransaction(
+                TestUtils.getTransactionInputIncome(category.getHash(), account_1.getHash()));
+
+        // language=GraphQL
+        String query =
+                """
+                query($hash: String!){
+                  getTransactionsPage(
+                    page: {number: 0, size: 10}
+                    filter:
+                        {
+                            logicOperator: AND,
+                            stringFilters: [{
+                            	operator: EQUALS
+                          	 	value: $hash
+                          	 	field: "category.hash"
+                          	 }
+                            ]
+                            }
+                  ) {
+                    content {
+                        hash
+                        name
+                    }
+                  }
+                }
+                """;
+        List<Transaction> transactions = graphQlTester
+                .document(query)
+                .variable("hash", category.getHash())
+                .execute()
+                .path("data.getTransactionsPage.content")
+                .entityList(Transaction.class)
+                .get();
+        assertAll(
+                () -> assertThat(transactions.stream()
+                                .anyMatch(a -> a.getHash().equals(transaction.getHash())))
+                        .isTrue(),
+                () -> assertThat(transactions).hasSize(1));
     }
 }

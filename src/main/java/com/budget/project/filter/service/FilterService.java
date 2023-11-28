@@ -82,6 +82,9 @@ public class FilterService {
         if (Objects.nonNull(filter.booleanFilters())) {
             predicates.addAll(getBooleanPredicates(filter.booleanFilters(), criteriaBuilder, root));
         }
+        if (Objects.nonNull(filter.accountTypeFilters())) {
+            predicates.addAll(getAccountTypePredicates(filter.accountTypeFilters(), criteriaBuilder, root));
+        }
 
         if (filter.subFilters() != null) {
             List<Predicate> subPredicates = new ArrayList<>();
@@ -131,6 +134,18 @@ public class FilterService {
         return predicates;
     }
 
+    private <T> List<Predicate> getAccountTypePredicates(
+            Set<AccountTypeExpression> accountTypeExpressions,
+            CriteriaBuilder criteriaBuilder,
+            Root<T> root) {
+        List<Predicate> predicates = new ArrayList<>();
+        for (AccountTypeExpression accountTypeExpression : accountTypeExpressions) {
+            predicates.add(criteriaBuilder.equal(
+                    root.get(accountTypeExpression.field()), accountTypeExpression.value()));
+        }
+        return predicates;
+    }
+
     private <T> List<Predicate> getStringPredicates(
             Set<StringExpression> stringExpressions, CriteriaBuilder criteriaBuilder, Root<T> root)
             throws InvalidDataAccessApiUsageException {
@@ -147,6 +162,7 @@ public class FilterService {
         }
         return predicates;
     }
+
 
     private Expression<?> getField(String field, Root<?> root) {
         Path<?> path = null;

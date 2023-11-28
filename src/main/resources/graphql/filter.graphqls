@@ -3,9 +3,14 @@ input Filter {
     doubleFilters: [DoubleExpression]
     booleanFilters: [BooleanExpression]
     dateFilters: [DateExpression]
+    accountTypeFilters: [AccountTypeExpression]
     logicOperator: LogicOperator
     subFilters: [Filter]
+}
 
+input AccountTypeExpression {
+    field: String!
+    value: AccountType!
 }
 
 input BooleanExpression {

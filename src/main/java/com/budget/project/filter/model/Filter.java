@@ -12,5 +12,6 @@ public record Filter(
         Set<BooleanExpression> booleanFilters,
         Set<DoubleExpression> doubleFilters,
         Set<DateExpression> dateFilters,
+        Set<AccountTypeExpression> accountTypeFilters,
         LogicOperator logicOperator,
         Set<Filter> subFilters) {}

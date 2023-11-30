@@ -71,7 +71,7 @@ public class Account {
                 .color(accountInput.color())
                 .accountType(accountInput.accountType())
                 .hash(UUID.randomUUID().toString())
-                .archived(false)
+                .archived(accountInput.archived() != null && accountInput.archived())
                 .name(accountInput.name())
                 .currency(accountInput.currency())
                 .description(accountInput.description())

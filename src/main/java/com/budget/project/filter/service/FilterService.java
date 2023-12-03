@@ -165,16 +165,17 @@ public class FilterService {
 
 
     private Expression<?> getField(String field, Root<?> root) {
-        Path<?> path = null;
-        for (String splittedField : field.split("\\.")) {
-            if (path == null) {
-                path = root.get(splittedField);
-            } else {
-                path = path.get(splittedField);
-            }
+        String[] split = field.split("\\.");
+        if(split.length == 1) {
+            return root.get(split[0]);
         }
-
-        return path;
+        if(split.length == 2) {
+            return root.join(split[0], JoinType.LEFT).get(split[1]);
+        }
+        else {
+            log.warn("three or more level of filtering is not implemented yet");
+            throw new AppException("Something went wrong with filtering", HttpStatus.BAD_REQUEST);
+        }
     }
 
     private <T> List<Predicate> getDoublePredicates(

@@ -40,6 +40,10 @@ public class Account {
     @ToString.Exclude
     private Account parent;
 
+    // @Column(nullable = false)
+    // private Boolean includeInBalance;
+    //TODO
+
     @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true)
     private String hash;

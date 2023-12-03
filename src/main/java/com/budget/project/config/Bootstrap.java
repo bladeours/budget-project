@@ -59,6 +59,7 @@ public class Bootstrap implements ApplicationRunner {
                 .parentHash(account1.getHash())
                 .build());
 
+
         var account3 = accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.SAVINGS)
                 .balance(1.2)

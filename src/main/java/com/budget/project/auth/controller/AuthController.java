@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
@@ -50,7 +52,8 @@ public class AuthController {
     @MutationMapping
     public JwtResponse refreshToken() {
         if (Objects.isNull(httpServletRequest.getCookies())) {
-            throw new AppException("can't find refreesh cookie", HttpStatus.BAD_REQUEST);
+            log.warn("can't find refresh cookie");
+            throw new AppException("can't find refresh cookie", HttpStatus.BAD_REQUEST);
         }
         Optional<Cookie> refreshCookie = Arrays.stream(httpServletRequest.getCookies())
                 .filter(c -> c.getName().equals(refreshTokenName))

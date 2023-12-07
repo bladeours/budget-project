@@ -10,3 +10,9 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     root: WARN
     org.springframework.security: WARN
+jwt:
+  # 1000 * 60 * 1 = 1min
+  expiration: 60000
+  refresh:
+    #1000 * 60 * 1000 = 1000min
+    expiration: 60000000

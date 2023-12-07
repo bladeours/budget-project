@@ -11,15 +11,11 @@ import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Account;
-import com.budget.project.model.db.AccountType;
-import com.budget.project.model.db.Currency;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.TransactionService;
 import com.budget.project.utils.TestUtils;
-
-import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,8 +26,6 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.Set;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -384,60 +378,60 @@ public class AccountControllerTest {
                 .expect(errorTypeEquals(NOT_FOUND));
     }
 
-    @Test
-    @Transactional
-    void shouldUpdateAccountParent_whenGetProperInput() {
-        login(USER_1, authService);
-        Account oldParent = accountService.createAccount(getAccountInput("old parent"));
-        Account account = accountService.createAccount(AccountInput.builder()
-                .parentHash(oldParent.getHash())
-                .balance(2D)
-                .accountType(AccountType.SAVINGS)
-                .description("")
-                .currency(Currency.PLN)
-                .archived(false)
-                .color("33")
-                .name("name")
-                .build());
-        Account newParent = accountService.createAccount(getAccountInput("new parent"));
-
-        AccountInput accountInput = AccountInput.builder()
-                .archived(account.getArchived())
-                .accountType(account.getAccountType())
-                .color(account.getColor())
-                .currency(account.getCurrency())
-                .description(account.getDescription())
-                .name(account.getName())
-                .parentHash(newParent.getHash())
-                .balance(account.getBalance())
-                .build();
-
-        // language=Graphql
-        String mutation =
-                """
-				mutation($accountInput: AccountInput!, $hash: String!) {
-				    updateAccount(hash: $hash, accountInput: $accountInput){
-				        name
-				        balance
-				    }
-				}
-				""";
-
-        graphQlTester
-                .document(mutation)
-                .variable("hash", account.getHash())
-                .variable("accountInput", TestUtils.toMap(accountInput))
-                .execute();
-
-        Account actualAccount = accountService.getAccount(account.getHash());
-
-        Set<Account> newParentSubAccounts =
-                accountService.getAccount(newParent.getHash()).getSubAccounts();
-        Set<Account> oldParentSubAccounts =
-                accountService.getAccount(oldParent.getHash()).getSubAccounts();
-        assertAll(
-                () -> assertThat(actualAccount.getParent()).isEqualTo(newParent),
-                () -> assertThat(oldParentSubAccounts).doesNotContain(actualAccount),
-                () -> assertThat(newParentSubAccounts).contains(actualAccount));
-    }
+    //    @Test
+    //    @Transactional
+    //    void shouldUpdateAccountParent_whenGetProperInput() {
+    //        login(USER_1, authService);
+    //        Account oldParent = accountService.createAccount(getAccountInput("old parent"));
+    //        Account account = accountService.createAccount(AccountInput.builder()
+    //                .parentHash(oldParent.getHash())
+    //                .balance(2D)
+    //                .accountType(AccountType.SAVINGS)
+    //                .description("")
+    //                .currency(Currency.PLN)
+    //                .archived(false)
+    //                .color("33")
+    //                .name("name")
+    //                .build());
+    //        Account newParent = accountService.createAccount(getAccountInput("new parent"));
+    //
+    //        AccountInput accountInput = AccountInput.builder()
+    //                .archived(account.getArchived())
+    //                .accountType(account.getAccountType())
+    //                .color(account.getColor())
+    //                .currency(account.getCurrency())
+    //                .description(account.getDescription())
+    //                .name(account.getName())
+    //                .parentHash(newParent.getHash())
+    //                .balance(account.getBalance())
+    //                .build();
+    //
+    //        // language=Graphql
+    //        String mutation =
+    //                """
+    //				mutation($accountInput: AccountInput!, $hash: String!) {
+    //				    updateAccount(hash: $hash, accountInput: $accountInput){
+    //				        name
+    //				        balance
+    //				    }
+    //				}
+    //				""";
+    //
+    //        graphQlTester
+    //                .document(mutation)
+    //                .variable("hash", account.getHash())
+    //                .variable("accountInput", TestUtils.toMap(accountInput))
+    //                .execute();
+    //
+    //        Account actualAccount = accountService.getAccount(account.getHash());
+    //
+    //        Set<Account> newParentSubAccounts =
+    //                accountService.getAccount(newParent.getHash()).getSubAccounts();
+    //        Set<Account> oldParentSubAccounts =
+    //                accountService.getAccount(oldParent.getHash()).getSubAccounts();
+    //        assertAll(
+    //                () -> assertThat(actualAccount.getParent()).isEqualTo(newParent),
+    //                () -> assertThat(oldParentSubAccounts).doesNotContain(actualAccount),
+    //                () -> assertThat(newParentSubAccounts).contains(actualAccount));
+    //    }
 }

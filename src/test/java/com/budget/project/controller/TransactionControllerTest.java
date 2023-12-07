@@ -59,9 +59,11 @@ public class TransactionControllerTest {
     }
 
     @Test
+    @Transactional
     void shouldCreateExpenseTransaction_whenGetProperInput() {
         login(USER_1, authService);
         Account account = accountService.createAccount(getAccountInput(""));
+        Double accountBalance = account.getBalance();
         Category category = categoryService.createCategory(getCategoryInput(false));
 
         // language=GraphQL
@@ -85,18 +87,24 @@ public class TransactionControllerTest {
                 .path("data.addTransaction")
                 .entity(Transaction.class)
                 .get();
+        Account finalAccount = accountService.getAccount(account.getHash());
         assertAll(
                 () -> assertThat(transactionService.getTransaction(transaction.getHash()))
                         .isNotNull(),
-                () -> assertThat(accountService.getAccount(account.getHash()).getBalance())
-                        .isEqualTo(account.getBalance() - transaction.getAmount()));
+                () -> assertThat(finalAccount.getBalance())
+                        .isEqualTo(accountBalance - transaction.getAmount()),
+                () -> assertThat(finalAccount.getTransactions()).contains(transaction),
+                () -> assertThat(category.getTransactions()).contains(transaction));
     }
 
     @Test
+    @Transactional
     void shouldCreateTransferTransaction_whenGetProperInput() {
         login(USER_1, authService);
         Account accountTo = accountService.createAccount(getAccountInput(""));
+        Double accountToBalance = accountTo.getBalance();
         Account accountFrom = accountService.createAccount(getAccountInput(""));
+        Double accountFromBalance = accountFrom.getBalance();
         // language=GraphQL
         String mutation =
                 """
@@ -124,15 +132,22 @@ public class TransactionControllerTest {
                         .isNotNull(),
                 () -> assertThat(
                                 accountService.getAccount(accountFrom.getHash()).getBalance())
-                        .isEqualTo(accountFrom.getBalance() - transaction.getAmount()),
+                        .isEqualTo(accountFromBalance - transaction.getAmount()),
                 () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance())
-                        .isEqualTo(accountTo.getBalance() + transaction.getAmount()));
+                        .isEqualTo(accountToBalance + transaction.getAmount()),
+                () -> assertThat(
+                                accountService.getAccount(accountFrom.getHash()).getTransactions())
+                        .contains(transaction),
+                () -> assertThat(accountService.getAccount(accountTo.getHash()).getTransactions())
+                        .contains(transaction));
     }
 
     @Test
+    @Transactional
     void shouldCreateIncomeTransaction_whenGetProperInput() {
         login(USER_1, authService);
         Account accountTo = accountService.createAccount(getAccountInput(""));
+        Double accountToBalance = accountTo.getBalance();
         Category category = categoryService.createCategory(getCategoryInput(true));
         // language=GraphQL
         String mutation =
@@ -155,11 +170,14 @@ public class TransactionControllerTest {
                 .path("data.addTransaction")
                 .entity(Transaction.class)
                 .get();
+        Account finalAccount = accountService.getAccount(accountTo.getHash());
         assertAll(
                 () -> assertThat(transactionService.getTransaction(transaction.getHash()))
                         .isNotNull(),
-                () -> assertThat(accountService.getAccount(accountTo.getHash()).getBalance())
-                        .isEqualTo(accountTo.getBalance() + transaction.getAmount()));
+                () -> assertThat(finalAccount.getBalance())
+                        .isEqualTo(accountToBalance + transaction.getAmount()),
+                () -> assertThat(finalAccount.getTransactions()).contains(transaction),
+                () -> assertThat(category.getTransactions()).contains(transaction));
     }
 
     @Test
@@ -262,7 +280,7 @@ public class TransactionControllerTest {
                       }
 
                   """,
-                        transaction_jd1.getHash(), transaction_jd2.getHash()));
+                        transaction_jd3.getHash(), transaction_jd2.getHash()));
 
         query =
                 """
@@ -289,7 +307,7 @@ public class TransactionControllerTest {
                       }
 
                   """,
-                        transaction_jd3.getHash()));
+                        transaction_jd1.getHash()));
     }
 
     @Test
@@ -431,10 +449,10 @@ public class TransactionControllerTest {
                                 .getAccount(oldAccountFrom.getHash())
                                 .getBalance())
                         .isEqualTo(oldAccountFrom.getBalance()),
-                () -> assertEquals(accountService
-                        .getAccount(newAccountFrom.getHash())
-                        .getBalance(), newAccountFrom.getBalance()
-                        - transactionUpdateInput.amount(), 0.0001));
+                () -> assertEquals(
+                        accountService.getAccount(newAccountFrom.getHash()).getBalance(),
+                        newAccountFrom.getBalance() - transactionUpdateInput.amount(),
+                        0.0001));
     }
 
     @Test
@@ -475,16 +493,16 @@ public class TransactionControllerTest {
 
         assertAll(
                 () -> assertThat(transactionService
-                        .getTransaction(transactionBefore.getHash())
-                        .getAmount())
+                                .getTransaction(transactionBefore.getHash())
+                                .getAmount())
                         .isEqualTo(transactionUpdateInput.amount()),
                 () -> assertThat(accountService
-                        .getAccount(oldAccountFrom.getHash())
-                        .getBalance())
+                                .getAccount(oldAccountFrom.getHash())
+                                .getBalance())
                         .isEqualTo(oldAccountFrom.getBalance()),
-                () -> assertEquals(accountService
-                        .getAccount(newAccountTo.getHash())
-                        .getBalance(), newAccountTo.getBalance()
-                        + transactionUpdateInput.amount(), 0.0001));
+                () -> assertEquals(
+                        accountService.getAccount(newAccountTo.getHash()).getBalance(),
+                        newAccountTo.getBalance() + transactionUpdateInput.amount(),
+                        0.0001));
     }
 }

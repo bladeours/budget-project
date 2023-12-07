@@ -16,6 +16,8 @@ import org.springframework.graphql.execution.ErrorType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -59,7 +61,7 @@ public class TestUtils {
                 .transactionType(TransactionType.TRANSFER)
                 .accountFromHash(accountFrom)
                 .amount(10.0)
-                .date("2022-11-01T15:20:10Z")
+                .date(OffsetDateTime.now().toString())
                 .need(false)
                 .accountToHash(accountTo)
                 .currency(Currency.PLN)
@@ -72,7 +74,22 @@ public class TestUtils {
                 .transactionType(TransactionType.INCOME)
                 .accountToHash(accountFrom)
                 .amount(10.0)
-                .date("2022-11-01T15:20:10Z")
+                .date(OffsetDateTime.now().toString())
+                .need(false)
+                .categoryHash(category)
+                .currency(Currency.PLN)
+                .name("transaction_2")
+                .build();
+    }
+
+    public static TransactionInput getTransactionInputIncome(
+            String category, String accountFrom, String subCategory) {
+        return TransactionInput.builder()
+                .transactionType(TransactionType.INCOME)
+                .accountToHash(accountFrom)
+                .amount(10.0)
+                .subCategoryHash(subCategory)
+                .date(OffsetDateTime.now().toString())
                 .need(false)
                 .categoryHash(category)
                 .currency(Currency.PLN)
@@ -86,7 +103,7 @@ public class TestUtils {
                 .transactionType(TransactionType.EXPENSE)
                 .accountFromHash(accountFrom)
                 .amount(10.0)
-                .date("2022-11-01T15:20:10Z")
+                .date(OffsetDateTime.now().toString())
                 .need(false)
                 .categoryHash(categoryHash)
                 .currency(Currency.PLN)
@@ -96,8 +113,8 @@ public class TestUtils {
 
     public static CategoryInput getCategoryInput(Boolean income) {
         return CategoryInput.builder()
-                .archived(false)
                 .income(income)
+                .subCategories(List.of())
                 .color("33")
                 .name("name")
                 .build();

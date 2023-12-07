@@ -5,6 +5,7 @@ import com.budget.project.auth.service.AuthService;
 import com.budget.project.model.db.*;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
+import com.budget.project.model.dto.request.input.SubCategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
@@ -20,6 +21,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -59,7 +62,6 @@ public class Bootstrap implements ApplicationRunner {
                 .parentHash(account1.getHash())
                 .build());
 
-
         var account3 = accountService.createAccount(AccountInput.builder()
                 .accountType(AccountType.SAVINGS)
                 .balance(1.2)
@@ -88,67 +90,61 @@ public class Bootstrap implements ApplicationRunner {
                 .build());
         Category category1 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .parentHash(null)
-                .color("#746AB0")
+                .color("#FFCE30")
                 .name("Salary")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category1_1 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .parentHash(category1.getHash())
-                .color("#ffffff")
+                .color("#FFCE30")
                 .name("Glovo")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category1_2 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .parentHash(category1.getHash())
-                .color("#ffffff")
+                .color("#FFCE30")
                 .name("Atos")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category2 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .parentHash(null)
-                .color("#ffffff")
+                .color("#E389B9")
                 .name("Other")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category3 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .parentHash(null)
-                .color("#ffffff")
+                .color("#E389B9")
                 .name("Food")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category4 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .parentHash(category3.getHash())
-                .color("#ffffff")
+                .color("#E389B9")
                 .name("Restaurant")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
 
         Category category5 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .parentHash(category3.getHash())
-                .color("#ffffff")
+                .color("#746AB0")
                 .name("Grocery")
-                .archived(false)
+                .subCategories(List.of(
+                        new SubCategoryInput("Fruit", null),
+                        new SubCategoryInput("Vegetables", null)))
                 .build());
 
         Category category6 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .color("#ffffff")
+                .color("#746AB0")
                 .name("Entertainment")
-                .archived(false)
+                .subCategories(List.of())
                 .build());
-
 
         Transaction transaction1 = transactionService.createTransaction(TransactionInput.builder()
                 .transactionType(TransactionType.EXPENSE)
@@ -157,7 +153,6 @@ public class Bootstrap implements ApplicationRunner {
                 .date("2023-11-01T15:20:10.000Z")
                 .need(false)
                 .categoryHash(category3.getHash())
-                .subCategoryHash(category5.getHash())
                 .currency(Currency.PLN)
                 .name("transaction_1")
                 .build());
@@ -204,7 +199,7 @@ public class Bootstrap implements ApplicationRunner {
                 .name("transaction_3")
                 .build());
 
-        for (int i=0; i<50; i++){
+        for (int i = 0; i < 50; i++) {
             transactionService.createTransaction(TransactionInput.builder()
                     .transactionType(TransactionType.INCOME)
                     .accountToHash(account1.getHash())

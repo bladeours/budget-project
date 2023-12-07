@@ -41,9 +41,9 @@ public class AccountService {
         if (Objects.nonNull(accountInput.parentHash())) {
             Account parent = this.getAccount(accountInput.parentHash());
             if (Objects.nonNull(parent.getParent())) {
-                log.warn("only one level of subAccounts is possible");
+                log.warn("only one level of subCategories is possible");
                 throw new AppException(
-                        "only one level of subAccounts is possible", HttpStatus.BAD_REQUEST);
+                        "only one level of subCategories is possible", HttpStatus.BAD_REQUEST);
             }
             account = Account.of(accountInput, userService.getLoggedUser(), parent);
             account = accountRepository.save(account);
@@ -76,8 +76,7 @@ public class AccountService {
         if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
             return accountRepository.findAllByUsersContaining(userService.getLoggedUser());
         }
-        return accountRepository.findAll(
-                filterService.getSpecification(filter, Account.class));
+        return accountRepository.findAll(filterService.getSpecification(filter, Account.class));
     }
 
     @SneakyThrows
@@ -110,14 +109,14 @@ public class AccountService {
 
     public Account updateAccount(String hash, AccountInput accountInput) {
         Account account = this.getAccount(hash);
-//        if (parentChanged(accountInput.parentHash(), account)) {
-//            if (Objects.nonNull(account.getParent())) {
-//                account.getParent().getSubAccounts().remove(account);
-//            }
-//            Account newParent = this.getAccount(accountInput.parentHash());
-//            account.setParent(newParent);
-//            newParent.getSubAccounts().add(account);
-//        }
+        //        if (parentChanged(accountInput.parentHash(), account)) {
+        //            if (Objects.nonNull(account.getParent())) {
+        //                account.getParent().getSubAccounts().remove(account);
+        //            }
+        //            Account newParent = this.getAccount(accountInput.parentHash());
+        //            account.setParent(newParent);
+        //            newParent.getSubAccounts().add(account);
+        //        }
 
         account = account.toBuilder()
                 .accountType(accountInput.accountType())
@@ -136,6 +135,4 @@ public class AccountService {
                 || (Objects.nonNull(account.getParent())
                         && !parentHash.equals(account.getParent().getHash()));
     }
-
-
 }

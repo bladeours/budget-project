@@ -3,10 +3,7 @@ package com.budget.project.service;
 import com.budget.project.exception.AppException;
 import com.budget.project.filter.model.Filter;
 import com.budget.project.filter.service.FilterService;
-import com.budget.project.model.db.Account;
-import com.budget.project.model.db.Category;
-import com.budget.project.model.db.Transaction;
-import com.budget.project.model.db.TransactionType;
+import com.budget.project.model.db.*;
 import com.budget.project.model.dto.request.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.service.repository.TransactionRepository;
@@ -20,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,10 +73,12 @@ public class TransactionService {
             log.warn("category is not for \"income\"");
             throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
         }
-        Category subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
-        Transaction transaction = Transaction.of(transactionInput, null, accountTo, category, subCategory);
+        SubCategory subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
+        Transaction transaction =
+                Transaction.of(transactionInput, null, accountTo, category, subCategory);
         transaction = transactionRepository.save(transaction);
         accountTo.getTransactions().add(transaction);
+        category.getTransactions().add(transaction);
         addToBalance(accountTo, transaction.getAmount());
         return transactionRepository.save(transaction);
     }
@@ -88,7 +86,8 @@ public class TransactionService {
     private Transaction handleTransferTransaction(TransactionInput transactionInput) {
         Account accountFrom = accountService.getAccount(transactionInput.accountFromHash());
         Account accountTo = accountService.getAccount(transactionInput.accountToHash());
-        Transaction transaction = Transaction.of(transactionInput, accountFrom, accountTo, null, null);
+        Transaction transaction =
+                Transaction.of(transactionInput, accountFrom, accountTo, null, null);
         transaction = transactionRepository.save(transaction);
         accountTo.getTransactions().add(transaction);
         accountFrom.getTransactions().add(transaction);
@@ -97,21 +96,22 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    private Category getSubCategory(String hash, Category parent) {
-        Category subCategory = null;
-        if(Objects.nonNull(hash)){
-            subCategory = categoryService.getCategory(hash);
-            if(Objects.isNull(subCategory.getParent())) {
+    private SubCategory getSubCategory(String hash, Category parent) {
+        SubCategory subCategory = null;
+        if (Objects.nonNull(hash)) {
+            subCategory = categoryService.getSubCategory(hash);
+            if (Objects.isNull(subCategory.getParent())) {
                 log.warn("this category is not subCategory");
                 throw new AppException("incorrect subCategory", HttpStatus.BAD_REQUEST);
             }
-            if(!subCategory.getParent().equals(parent)) {
+            if (!subCategory.getParent().equals(parent)) {
                 log.warn("this subCategory is for different category");
                 throw new AppException("incorrect subCategory", HttpStatus.BAD_REQUEST);
             }
         }
         return subCategory;
     }
+
     private Transaction handleExpenseTransaction(TransactionInput transactionInput) {
         Account accountFrom = accountService.getAccount(transactionInput.accountFromHash());
         Category category = categoryService.getCategory(transactionInput.categoryHash());
@@ -120,10 +120,12 @@ public class TransactionService {
             log.warn("category is not for \"expense\"");
             throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
         }
-        Category subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
+        SubCategory subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
 
-        Transaction transaction = Transaction.of(transactionInput, accountFrom, null, category, subCategory);
+        Transaction transaction =
+                Transaction.of(transactionInput, accountFrom, null, category, subCategory);
         accountFrom.getTransactions().add(transaction);
+        category.getTransactions().add(transaction);
         subtractFromBalance(accountFrom, transaction.getAmount());
         return transactionRepository.save(transaction);
     }
@@ -183,13 +185,14 @@ public class TransactionService {
     }
 
     public Page<Transaction> getTransactionsPage(CustomPage page, Filter filter) {
-        PageRequest pageRequest = PageRequest.of(page.number(), page.size(), Sort.by("date").descending());
+        PageRequest pageRequest =
+                PageRequest.of(page.number(), page.size(), Sort.by("date").descending());
         if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
             return transactionRepository.findTransactionsForUser(
                     userService.getLoggedUser(), pageRequest);
         }
         return transactionRepository.findAll(
-                filterService.getSpecification(filter, Transaction.class),pageRequest);
+                filterService.getSpecification(filter, Transaction.class), pageRequest);
     }
 
     public Transaction getTransaction(String hash) {
@@ -227,8 +230,7 @@ public class TransactionService {
         account.setBalance(account.getBalance() + amount);
     }
 
-    public Transaction updateTransaction(
-            String hash, TransactionInput transactionInput) {
+    public Transaction updateTransaction(String hash, TransactionInput transactionInput) {
         Transaction transaction = rollbackChanges(this.getTransaction(hash));
         validate(
                 transactionInput.transactionType(),
@@ -240,13 +242,13 @@ public class TransactionService {
             case EXPENSE -> {
                 Account newAccountFrom =
                         accountService.getAccount(transactionInput.accountFromHash());
-                Category category =
-                        categoryService.getCategory(transactionInput.categoryHash());
+                Category category = categoryService.getCategory(transactionInput.categoryHash());
                 if (category.getIncome()) {
                     log.warn("category is not for \"expense\"");
                     throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
                 }
-                Category subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
+                SubCategory subCategory =
+                        getSubCategory(transactionInput.subCategoryHash(), category);
                 transaction.setAccountFrom(newAccountFrom);
                 newAccountFrom.getTransactions().add(transaction);
                 subtractFromBalance(transaction.getAccountFrom(), transactionInput.amount());
@@ -254,15 +256,14 @@ public class TransactionService {
                 transaction.setSubCategory(subCategory);
             }
             case INCOME -> {
-                Account newAccountTo =
-                        accountService.getAccount(transactionInput.accountToHash());
-                Category category =
-                        categoryService.getCategory(transactionInput.categoryHash());
+                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
+                Category category = categoryService.getCategory(transactionInput.categoryHash());
                 if (!category.getIncome()) {
                     log.warn("category is not for \"income\"");
                     throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
                 }
-                Category subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
+                SubCategory subCategory =
+                        getSubCategory(transactionInput.subCategoryHash(), category);
                 transaction.setAccountTo(newAccountTo);
                 newAccountTo.getTransactions().add(transaction);
                 addToBalance(transaction.getAccountTo(), transactionInput.amount());
@@ -272,8 +273,7 @@ public class TransactionService {
             case TRANSFER -> {
                 Account newAccountFrom =
                         accountService.getAccount(transactionInput.accountFromHash());
-                Account newAccountTo =
-                        accountService.getAccount(transactionInput.accountToHash());
+                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
                 transaction.setAccountFrom(newAccountFrom);
                 newAccountFrom.getTransactions().add(transaction);
                 transaction.setAccountTo(newAccountTo);
@@ -295,7 +295,7 @@ public class TransactionService {
     }
 
     private Transaction rollbackChanges(Transaction transaction) {
-        switch (transaction.getTransactionType()){
+        switch (transaction.getTransactionType()) {
             case EXPENSE -> {
                 Account account = transaction.getAccountFrom();
                 transaction.setAccountFrom(null);

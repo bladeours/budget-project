@@ -11,21 +11,32 @@ type Category {
     color: String!
     hash: String!
     income: Boolean!
-    parent: Category
     archived: Boolean!
-    subCategories: [Category]
+    subCategories: [SubCategory]
+}
+
+type SubCategory {
+    name: String!
+    color: String!
+    hash: String!
+    parent: Category
 }
 
 input CategoryInput {
     name: String!
     color: String!
     income: Boolean!
-    parentHash: String
-    archived: Boolean
+    subCategories: [SubCategoryInput]
 }
 
 input CategoryUpdateInput {
     name: String!
     color: String!
-    archived: Boolean
+    archived: Boolean!
+    subCategories: [SubCategoryInput]
+}
+
+input SubCategoryInput {
+    name: String!
+    hash: String
 }

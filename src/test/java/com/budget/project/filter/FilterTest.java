@@ -159,8 +159,8 @@ public class FilterTest {
         Category category = categoryService.createCategory(CategoryInput.builder()
                 .name("name_category")
                 .income(true)
+                .subCategories(List.of())
                 .color("434")
-                .archived(false)
                 .build());
 
         Transaction transaction = transactionService.createTransaction(
@@ -219,8 +219,8 @@ public class FilterTest {
         Category category = categoryService.createCategory(CategoryInput.builder()
                 .name("name_category")
                 .income(true)
+                .subCategories(List.of())
                 .color("434")
-                .archived(false)
                 .build());
 
         Transaction transaction = transactionService.createTransaction(

@@ -31,12 +31,12 @@ public class Category {
     @Column(nullable = false)
     private Boolean income;
 
-    @ManyToOne
-    @ToString.Exclude
-    private Category parent;
+    //    @ManyToOne(cascade = CascadeType.DETACH)
+    //    @ToString.Exclude
+    //    private Category parent;
 
-    @OneToMany
-    private Set<Category> subCategories = new HashSet<>();
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.DETACH)
+    private Set<SubCategory> subCategories = new HashSet<>();
 
     @Column(nullable = false)
     private Boolean archived;
@@ -57,11 +57,12 @@ public class Category {
                 .income(categoryInput.income())
                 .users(Set.of(user))
                 .hash(UUID.randomUUID().toString())
-                .archived(categoryInput.archived())
+                .transactions(new HashSet<>())
+                .archived(false)
                 .build();
     }
 
-    public static Category of(CategoryInput categoryInput, User user, Category parent) {
-        return Category.of(categoryInput, user).toBuilder().parent(parent).build();
-    }
+    //    public static Category of(CategoryInput categoryInput, User user, Category parent) {
+    //        return Category.of(categoryInput, user).toBuilder().parent(parent).build();
+    //    }
 }

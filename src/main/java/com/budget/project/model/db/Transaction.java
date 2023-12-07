@@ -53,7 +53,7 @@ public class Transaction {
     private Category category;
 
     @ManyToOne(cascade = CascadeType.DETACH)
-    private Category subCategory;
+    private SubCategory subCategory;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -64,8 +64,7 @@ public class Transaction {
             Account accountFrom,
             Account accountTo,
             Category category,
-            Category subCategory
-    ) {
+            SubCategory subCategory) {
         return Transaction.builder()
                 .name(transactionInput.name())
                 .note(transactionInput.note())

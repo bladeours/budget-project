@@ -9,11 +9,17 @@ import static org.springframework.graphql.execution.ErrorType.*;
 
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.exception.AppException;
+import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Category;
+import com.budget.project.model.db.SubCategory;
+import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.CategoryUpdateInput;
+import com.budget.project.model.dto.request.input.SubCategoryInput;
+import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
 import com.budget.project.service.TransactionService;
+import com.budget.project.service.UserService;
 
 import jakarta.transaction.Transactional;
 
@@ -26,6 +32,8 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -46,6 +54,12 @@ public class CategoryControllerTest {
 
     @Autowired
     private TransactionService transactionService;
+
+    @Autowired
+    private AccountService accountService;
+
+    @Autowired
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -83,34 +97,6 @@ public class CategoryControllerTest {
                 () -> assertThat(actualCategory.getUsers().stream()
                                 .anyMatch(u -> u.getEmail().equals(USER_1)))
                         .isTrue());
-    }
-
-    @Test
-    @Transactional
-    void shouldReturnError_whenMoreThanOneLevelSubCategory() {
-        login(USER_1, authService);
-        CategoryInput categoryInput = getCategoryInput(true);
-        Category parent = categoryService.createCategory(categoryInput);
-        categoryInput = categoryInput.toBuilder().parentHash(parent.getHash()).build();
-        Category child = categoryService.createCategory(categoryInput);
-        categoryInput = categoryInput.toBuilder().parentHash(child.getHash()).build();
-        // language=GraphQL
-        String mutation =
-                """
-				mutation($categoryInput: CategoryInput!) {
-				    addCategory(categoryInput: $categoryInput){
-				        hash
-				        name
-				    }
-				}
-				""";
-
-        graphQlTester
-                .document(mutation)
-                .variable("categoryInput", toMap(categoryInput))
-                .execute()
-                .errors()
-                .expect(errorTypeEquals(BAD_REQUEST));
     }
 
     @Test
@@ -238,9 +224,14 @@ public class CategoryControllerTest {
     @Test
     void shouldRemoveCategoryAndSubCategories_whenGetProperInput() {
         login(USER_1, authService);
-        Category parent = categoryService.createCategory(getCategoryInput(true));
-        Category child = categoryService.createCategory(
-                getCategoryInput(true).toBuilder().parentHash(parent.getHash()).build());
+        Category parent = categoryService.createCategory(getCategoryInput(true).toBuilder()
+                .subCategories(List.of(new SubCategoryInput("child", null)))
+                .build());
+
+        SubCategory child = parent.getSubCategories().stream()
+                .filter(c -> c.getName().equals("child"))
+                .findFirst()
+                .get();
 
         // language=GraphQL
         String mutation =
@@ -342,5 +333,62 @@ public class CategoryControllerTest {
                 .execute()
                 .errors()
                 .expect(errorTypeEquals(NOT_FOUND));
+    }
+
+    @Test
+    @Transactional
+    void shouldRemoveSubCategoryFromParentAndMoveTransactionsToParent_whenGetUpdate() {
+        login(USER_1, authService);
+        Category parent = categoryService.createCategory(getCategoryInput(true).toBuilder()
+                .subCategories(List.of(
+                        new SubCategoryInput("child", null), new SubCategoryInput("child_2", null)))
+                .build());
+
+        SubCategory child = parent.getSubCategories().stream()
+                .filter(c -> c.getName().equals("child"))
+                .findFirst()
+                .get();
+        SubCategory child2 = parent.getSubCategories().stream()
+                .filter(c -> c.getName().equals("child_2"))
+                .findFirst()
+                .get();
+        Account account = accountService.createAccount(getAccountInput(""));
+        Transaction transaction = transactionService.createTransaction(
+                getTransactionInputIncome(parent.getHash(), account.getHash(), child.getHash()));
+
+        CategoryUpdateInput categoryUpdateInput = CategoryUpdateInput.builder()
+                .name(parent.getName())
+                .color(parent.getColor())
+                .archived(parent.getArchived())
+                .subCategories(List.of())
+                .build();
+
+        // language=GraphQL
+        String mutation =
+                """
+				mutation($hash: String!, $categoryUpdateInput: CategoryUpdateInput!) {
+				    updateCategory(hash: $hash, categoryUpdateInput: $categoryUpdateInput){
+				    hash
+				    }
+				}
+				""";
+
+        graphQlTester
+                .document(mutation)
+                .variable("hash", parent.getHash())
+                .variable("categoryUpdateInput", toMap(categoryUpdateInput))
+                .execute();
+
+        Category finalParent = categoryService.getCategory(parent.getHash());
+        Transaction finalTransaction = transactionService.getTransaction(transaction.getHash());
+
+        assertAll(
+                () -> assertThrows(
+                        AppException.class, () -> categoryService.getCategory(child.getHash())),
+                () -> assertThat(finalParent.getSubCategories()).doesNotContain(child),
+                () -> assertThat(finalParent.getSubCategories()).contains(child2),
+                () -> assertThat(finalParent.getTransactions()).contains(finalTransaction),
+                () -> assertThat(finalTransaction.getCategory()).isEqualTo(finalParent),
+                () -> assertThat(finalTransaction.getSubCategory()).isNull());
     }
 }

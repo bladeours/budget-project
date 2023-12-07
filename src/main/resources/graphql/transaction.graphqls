@@ -32,7 +32,7 @@ type Transaction {
     accountFrom: Account
     transactionType: TransactionType
     category: Category
-    subCategory: Category
+    subCategory: SubCategory
 }
 
 enum TransactionType {

@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -106,7 +107,8 @@ public class CategoryService {
 
     private void deleteSubCategory(SubCategory subCategory) {
         subCategory.getParent().getTransactions().stream()
-                .filter(t -> t.getSubCategory().equals(subCategory))
+                .filter(t -> Objects.nonNull(t.getSubCategory())
+                        && t.getSubCategory().equals(subCategory))
                 .forEach(transaction -> transaction.setSubCategory(null));
 
         subCategory.getParent().getSubCategories().remove(subCategory);
@@ -120,6 +122,14 @@ public class CategoryService {
                         .subCategories()
                         .contains(new SubCategoryInput(c.getName(), c.getHash())))
                 .forEach(this::deleteSubCategory);
+
+        Set<SubCategoryInput> subCategoriesToAdd = categoryUpdateInput.subCategories().stream()
+                .filter(c -> Objects.isNull(c.hash()))
+                .collect(Collectors.toSet());
+
+        for (SubCategoryInput subCategoryInput : subCategoriesToAdd) {
+            category = this.addSubCategory(subCategoryInput.name(), category);
+        }
 
         category = category.toBuilder()
                 .name(categoryUpdateInput.name())

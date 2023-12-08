@@ -6,7 +6,7 @@ import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.db.User;
-import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.repository.AccountRepository;
 

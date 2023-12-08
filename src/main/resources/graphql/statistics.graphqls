@@ -1,0 +1,4 @@
+type CategoryAmount {
+    name: String,
+    amount: Float
+}

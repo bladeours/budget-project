@@ -2,7 +2,7 @@ package com.budget.project.controller;
 
 import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Category;
-import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.CategoryUpdateInput;
 import com.budget.project.service.CategoryService;

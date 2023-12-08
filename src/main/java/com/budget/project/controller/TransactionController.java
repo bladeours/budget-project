@@ -2,7 +2,7 @@ package com.budget.project.controller;
 
 import com.budget.project.filter.model.Filter;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.service.TransactionService;
 
@@ -39,7 +39,8 @@ public class TransactionController {
     }
 
     @MutationMapping
-    public Transaction updateTransaction(@Argument TransactionInput transactionInput, @Argument String hash) {
+    public Transaction updateTransaction(
+            @Argument TransactionInput transactionInput, @Argument String hash) {
         return transactionService.updateTransaction(hash, transactionInput);
     }
 

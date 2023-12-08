@@ -6,7 +6,7 @@ import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.Category;
 import com.budget.project.model.db.SubCategory;
 import com.budget.project.model.db.Transaction;
-import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.CategoryUpdateInput;
 import com.budget.project.model.dto.request.input.SubCategoryInput;

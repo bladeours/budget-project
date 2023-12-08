@@ -4,8 +4,9 @@ import com.budget.project.exception.AppException;
 import com.budget.project.filter.model.Filter;
 import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.*;
-import com.budget.project.model.dto.request.CustomPage;
+import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
+import com.budget.project.service.projection.TransactionCategorySum;
 import com.budget.project.service.repository.TransactionRepository;
 import com.budget.project.utils.DateUtils;
 
@@ -20,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -322,5 +325,9 @@ public class TransactionService {
             }
         }
         return transaction;
+    }
+
+    List<TransactionCategorySum> sumTransactionAmountForCategories(Boolean income, LocalDateTime startDate, LocalDateTime endDate){
+        return transactionRepository.sumTransactionAmountForCategoriesAndUser(income, userService.getLoggedUser(), startDate, endDate);
     }
 }

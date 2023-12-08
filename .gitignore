@@ -37,3 +37,6 @@ build/
 /localdb.mv.db
 /localdb.trace.db
 /localdb.lock.db
+/localdbTest.lock.db
+/localdbTest.mv.db
+/localdbTest.trace.db

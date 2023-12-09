@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
@@ -199,6 +200,8 @@ public class Bootstrap implements ApplicationRunner {
                 .name("transaction_3")
                 .build());
 
+
+
         for (int i = 0; i < 50; i++) {
             transactionService.createTransaction(TransactionInput.builder()
                     .transactionType(TransactionType.INCOME)
@@ -207,6 +210,58 @@ public class Bootstrap implements ApplicationRunner {
                     .date("2023-10-01T15:20:10Z")
                     .need(false)
                     .categoryHash(category1.getHash())
+                    .currency(Currency.PLN)
+                    .name("transaction_3")
+                    .build());
+        }
+
+        for (int i = 0; i < 10; i++) {
+            transactionService.createTransaction(TransactionInput.builder()
+                    .transactionType(TransactionType.EXPENSE)
+                    .accountFromHash(account1.getHash())
+                    .amount(75.42)
+                    .date(OffsetDateTime.now().minusDays(5).toString())
+                    .need(false)
+                    .categoryHash(category5.getHash())
+                    .currency(Currency.PLN)
+                    .name("transaction_3")
+                    .build());
+        }
+
+        for (int i = 0; i < 10; i++) {
+            transactionService.createTransaction(TransactionInput.builder()
+                    .transactionType(TransactionType.EXPENSE)
+                    .accountFromHash(account1.getHash())
+                    .amount(10.42)
+                    .date(OffsetDateTime.now().minusDays(5).toString())
+                    .need(false)
+                    .categoryHash(category6.getHash())
+                    .currency(Currency.PLN)
+                    .name("transaction_3")
+                    .build());
+        }
+
+        for (int i = 0; i < 10; i++) {
+            transactionService.createTransaction(TransactionInput.builder()
+                    .transactionType(TransactionType.EXPENSE)
+                    .accountFromHash(account1.getHash())
+                    .amount(24.0)
+                    .date(OffsetDateTime.now().minusDays(5).toString())
+                    .need(false)
+                    .categoryHash(category3.getHash())
+                    .currency(Currency.PLN)
+                    .name("transaction_3")
+                    .build());
+        }
+
+        for (int i = 0; i < 10; i++) {
+            transactionService.createTransaction(TransactionInput.builder()
+                    .transactionType(TransactionType.EXPENSE)
+                    .accountFromHash(account1.getHash())
+                    .amount(30.0)
+                    .date(OffsetDateTime.now().minusDays(5).toString())
+                    .need(false)
+                    .categoryHash(category4.getHash())
                     .currency(Currency.PLN)
                     .name("transaction_3")
                     .build());

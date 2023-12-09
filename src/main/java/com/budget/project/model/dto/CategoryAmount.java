@@ -1,3 +1,3 @@
 package com.budget.project.model.dto;
 
-public record CategoryAmount(String name, Double amount) {}
+public record CategoryAmount(String name, Double amount, String color) {}

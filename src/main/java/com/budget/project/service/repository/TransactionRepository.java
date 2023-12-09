@@ -28,10 +28,11 @@ public interface TransactionRepository
     Optional<Transaction> findByHashForUser(String hash, User user);
 
     @Query(
-            "SELECT t.category.name as categoryName, sum(t.amount) as sumForCategory FROM Transaction t" +
+            "SELECT t.category.name as categoryName, sum(t.amount) as sumForCategory, t.category.color as categoryColor FROM Transaction t" +
                     " where (:user MEMBER OF t.category.users) and (t.category.income = :income) and " +
                     "(t.date between :startDate and :endDate)" +
-                    " group by t.category.name order by sum(t.amount)"
+                    " group by t.category.name order by sum(t.amount)" +
+                    " desc "
     )
     List<TransactionCategorySum> sumTransactionAmountForCategoriesAndUser(Boolean income, User user, LocalDateTime startDate, LocalDateTime endDate);
 }

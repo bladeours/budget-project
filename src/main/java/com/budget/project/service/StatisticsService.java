@@ -21,12 +21,11 @@ import java.util.Set;
 @Transactional
 @RequiredArgsConstructor
 public class StatisticsService {
-    private final CategoryService categoryService;
     private final TransactionService transactionService;
 
     public List<CategoryAmount> getAmountByCategory(
             String startDate, String endDate, Boolean income) {
         List<TransactionCategorySum> transactions = transactionService.sumTransactionAmountForCategories(income, DateUtils.parse(startDate), DateUtils.parse(endDate));
-        return transactions.stream().map(t -> new CategoryAmount(t.getCategoryName(), t.getSumForCategory())).toList();
+        return transactions.stream().map(t -> new CategoryAmount(t.getCategoryName(), t.getSumForCategory(), t.getCategoryColor())).toList();
     }
 }

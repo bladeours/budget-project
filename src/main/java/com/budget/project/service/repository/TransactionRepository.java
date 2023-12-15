@@ -2,6 +2,7 @@ package com.budget.project.service.repository;
 
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.db.User;
+import com.budget.project.service.TransactionService;
 import com.budget.project.service.projection.TransactionCategorySum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,4 +36,5 @@ public interface TransactionRepository
                     " desc "
     )
     List<TransactionCategorySum> sumTransactionAmountForCategoriesAndUser(Boolean income, User user, LocalDateTime startDate, LocalDateTime endDate);
+    List<Transaction> findAllByFutureTrue();
 }

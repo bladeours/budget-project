@@ -123,9 +123,13 @@ public class CategoryService {
                         .contains(new SubCategoryInput(c.getName(), c.getHash())))
                 .forEach(this::deleteSubCategory);
 
-        Set<SubCategoryInput> subCategoriesToAdd = categoryUpdateInput.subCategories().stream()
-                .filter(c -> Objects.isNull(c.hash()))
-                .collect(Collectors.toSet());
+        Set<SubCategoryInput> subCategoriesToAdd = new HashSet<>();
+        if(Objects.nonNull(categoryUpdateInput.subCategories())){
+            subCategoriesToAdd = categoryUpdateInput.subCategories().stream()
+                    .filter(c -> Objects.isNull(c.hash()))
+                    .collect(Collectors.toSet());
+        }
+
 
         for (SubCategoryInput subCategoryInput : subCategoriesToAdd) {
             category = this.addSubCategory(subCategoryInput.name(), category);

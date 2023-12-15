@@ -59,6 +59,8 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private Currency currency;
 
+    private Boolean future = false;
+
     public static Transaction of(
             TransactionInput transactionInput,
             Account accountFrom,
@@ -75,6 +77,7 @@ public class Transaction {
                 .accountTo(accountTo)
                 .accountFrom(accountFrom)
                 .category(category)
+                .future(false)
                 .subCategory(subCategory)
                 .currency(transactionInput.currency())
                 .transactionType(transactionInput.transactionType())

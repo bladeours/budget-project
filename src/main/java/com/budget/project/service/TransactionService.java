@@ -9,10 +9,8 @@ import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.service.projection.TransactionCategorySum;
 import com.budget.project.service.repository.TransactionRepository;
 import com.budget.project.utils.DateUtils;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,13 +52,13 @@ public class TransactionService {
         validate(transactionInput);
         switch (transactionInput.transactionType()) {
             case EXPENSE -> {
-                return handleExpenseTransaction(transactionInput);
+                return handleCreateExpenseTransaction(transactionInput);
             }
             case TRANSFER -> {
-                return handleTransferTransaction(transactionInput);
+                return handleCreateTransferTransaction(transactionInput);
             }
             case INCOME -> {
-                return handleIncomeTransaction(transactionInput);
+                return handleCraeteIncomeTransaction(transactionInput);
             }
             default -> {
                 log.warn("unsupported operation");
@@ -69,7 +67,125 @@ public class TransactionService {
         }
     }
 
-    private Transaction handleIncomeTransaction(TransactionInput transactionInput) {
+    public Page<Transaction> getTransactionsPage(CustomPage page, Filter filter) {
+        PageRequest pageRequest =
+                PageRequest.of(page.number(), page.size(), Sort.by("date").descending());
+        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
+            return transactionRepository.findTransactionsForUser(
+                    userService.getLoggedUser(), pageRequest);
+        }
+        return transactionRepository.findAll(
+                filterService.getSpecification(filter, Transaction.class), pageRequest);
+    }
+
+    public Transaction getTransaction(String hash) {
+        return transactionRepository
+                .findByHashForUser(hash, userService.getLoggedUser())
+                .orElseThrow(() -> {
+                    log.warn("can't find transaction with hash: {}", hash);
+                    return new AppException(
+                            "can't find transaction with hash: " + hash, HttpStatus.NOT_FOUND);
+                });
+    }
+
+    public void deleteTransaction(Transaction transaction) {
+        Account accountTo = transaction.getAccountTo();
+        if (Objects.nonNull(accountTo)) {
+            accountTo.getTransactions().remove(transaction);
+        }
+        Account accountFrom = transaction.getAccountFrom();
+        if (Objects.nonNull(accountFrom)) {
+            accountFrom.getTransactions().remove(transaction);
+        }
+        transactionRepository.delete(transaction);
+    }
+
+    public void deleteTransaction(String hash) {
+        Transaction transaction = this.getTransaction(hash);
+        deleteTransaction(transaction);
+    }
+
+    public Transaction updateTransaction(String hash, TransactionInput transactionInput) {
+        Transaction transaction = rollbackChanges(this.getTransaction(hash));
+        validate(
+                transactionInput.transactionType(),
+                transactionInput.accountToHash(),
+                transactionInput.accountFromHash(),
+                transactionInput.categoryHash());
+
+        switch (transactionInput.transactionType()) {
+            case EXPENSE -> {
+                Account newAccountFrom =
+                        accountService.getAccount(transactionInput.accountFromHash());
+                Category category = categoryService.getCategory(transactionInput.categoryHash());
+                if (category.getIncome()) {
+                    log.warn("category is not for \"expense\"");
+                    throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
+                }
+                SubCategory subCategory =
+                        getSubCategory(transactionInput.subCategoryHash(), category);
+                transaction.setAccountFrom(newAccountFrom);
+                newAccountFrom.getTransactions().add(transaction);
+                if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+                    transaction.setFuture(true);
+                } else {
+                    subtractFromBalance(transaction.getAccountFrom(), transactionInput.amount());
+                }
+                transaction.setCategory(category);
+                transaction.setSubCategory(subCategory);
+            }
+            case INCOME -> {
+                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
+                Category category = categoryService.getCategory(transactionInput.categoryHash());
+                if (!category.getIncome()) {
+                    log.warn("category is not for \"income\"");
+                    throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
+                }
+                SubCategory subCategory =
+                        getSubCategory(transactionInput.subCategoryHash(), category);
+                transaction.setAccountTo(newAccountTo);
+                newAccountTo.getTransactions().add(transaction);
+                if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+                    transaction.setFuture(true);
+                } else {
+                    addToBalance(transaction.getAccountTo(), transactionInput.amount());
+                }
+                transaction.setCategory(category);
+                transaction.setSubCategory(subCategory);
+            }
+            case TRANSFER -> {
+                Account newAccountFrom =
+                        accountService.getAccount(transactionInput.accountFromHash());
+                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
+                transaction.setAccountFrom(newAccountFrom);
+                newAccountFrom.getTransactions().add(transaction);
+                transaction.setAccountTo(newAccountTo);
+                newAccountTo.getTransactions().add(transaction);
+                if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+                    transaction.setFuture(true);
+                } else {
+                    subtractFromBalance(transaction.getAccountFrom(), transactionInput.amount());
+                    addToBalance(transaction.getAccountTo(), transactionInput.amount());
+                }
+            }
+        }
+
+        return transactionRepository.save(transaction.toBuilder()
+                .transactionType(transactionInput.transactionType())
+                .amount(transactionInput.amount())
+                .date(DateUtils.parse(transactionInput.date()))
+                .name(transactionInput.name())
+                .currency(transactionInput.currency())
+                .need(transactionInput.need())
+                .note(transactionInput.note())
+                .build());
+    }
+
+    public List<Transaction> getFutureTransactions() {
+        return transactionRepository.findAllByFutureTrue();
+    }
+
+    private Transaction handleCraeteIncomeTransaction(TransactionInput transactionInput) {
         Account accountTo = accountService.getAccount(transactionInput.accountToHash());
         Category category = categoryService.getCategory(transactionInput.categoryHash());
         if (!category.getIncome()) {
@@ -82,11 +198,15 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         accountTo.getTransactions().add(transaction);
         category.getTransactions().add(transaction);
-        addToBalance(accountTo, transaction.getAmount());
+        if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+            transaction.setFuture(true);
+        } else {
+            addToBalance(accountTo, transaction.getAmount());
+        }
         return transactionRepository.save(transaction);
     }
 
-    private Transaction handleTransferTransaction(TransactionInput transactionInput) {
+    private Transaction handleCreateTransferTransaction(TransactionInput transactionInput) {
         Account accountFrom = accountService.getAccount(transactionInput.accountFromHash());
         Account accountTo = accountService.getAccount(transactionInput.accountToHash());
         Transaction transaction =
@@ -94,8 +214,12 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         accountTo.getTransactions().add(transaction);
         accountFrom.getTransactions().add(transaction);
-        subtractFromBalance(accountFrom, transaction.getAmount());
-        addToBalance(accountTo, transaction.getAmount());
+        if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+            transaction.setFuture(true);
+        } else {
+            subtractFromBalance(accountFrom, transaction.getAmount());
+            addToBalance(accountTo, transaction.getAmount());
+        }
         return transactionRepository.save(transaction);
     }
 
@@ -115,7 +239,7 @@ public class TransactionService {
         return subCategory;
     }
 
-    private Transaction handleExpenseTransaction(TransactionInput transactionInput) {
+    private Transaction handleCreateExpenseTransaction(TransactionInput transactionInput) {
         Account accountFrom = accountService.getAccount(transactionInput.accountFromHash());
         Category category = categoryService.getCategory(transactionInput.categoryHash());
 
@@ -129,7 +253,11 @@ public class TransactionService {
                 Transaction.of(transactionInput, accountFrom, null, category, subCategory);
         accountFrom.getTransactions().add(transaction);
         category.getTransactions().add(transaction);
-        subtractFromBalance(accountFrom, transaction.getAmount());
+        if (DateUtils.parse(transactionInput.date()).isAfter(LocalDateTime.now())) {
+            transaction.setFuture(true);
+        } else {
+            subtractFromBalance(accountFrom, transaction.getAmount());
+        }
         return transactionRepository.save(transaction);
     }
 
@@ -141,6 +269,7 @@ public class TransactionService {
                 transactionInput.accountFromHash(),
                 transactionInput.categoryHash());
     }
+
 
     @SneakyThrows
     private void validate(
@@ -187,42 +316,45 @@ public class TransactionService {
         }
     }
 
-    public Page<Transaction> getTransactionsPage(CustomPage page, Filter filter) {
-        PageRequest pageRequest =
-                PageRequest.of(page.number(), page.size(), Sort.by("date").descending());
-        if (Objects.isNull(filter) || Objects.isNull(filter.logicOperator())) {
-            return transactionRepository.findTransactionsForUser(
-                    userService.getLoggedUser(), pageRequest);
+    private Transaction rollbackChanges(Transaction transaction) {
+        switch (transaction.getTransactionType()) {
+            case EXPENSE -> {
+                Account account = transaction.getAccountFrom();
+                transaction.setAccountFrom(null);
+                transaction.setCategory(null);
+                if (!transaction.getFuture()) {
+                    addToBalance(account, transaction.getAmount());
+                }
+                account.removeTransaction(transaction);
+            }
+            case INCOME -> {
+                Account account = transaction.getAccountTo();
+                transaction.setAccountTo(null);
+                transaction.setCategory(null);
+                if (!transaction.getFuture()) {
+                    subtractFromBalance(account, transaction.getAmount());
+                }
+                account.removeTransaction(transaction);
+            }
+            case TRANSFER -> {
+                Account accountTo = transaction.getAccountTo();
+                transaction.setAccountTo(null);
+                accountTo.removeTransaction(transaction);
+
+                Account accountFrom = transaction.getAccountFrom();
+                transaction.setAccountFrom(null);
+                accountFrom.removeTransaction(transaction);
+                if (!transaction.getFuture()) {
+                    subtractFromBalance(accountTo, transaction.getAmount());
+                    addToBalance(accountFrom, transaction.getAmount());
+                }
+            }
         }
-        return transactionRepository.findAll(
-                filterService.getSpecification(filter, Transaction.class), pageRequest);
+        return transaction;
     }
 
-    public Transaction getTransaction(String hash) {
-        return transactionRepository
-                .findByHashForUser(hash, userService.getLoggedUser())
-                .orElseThrow(() -> {
-                    log.warn("can't find transaction with hash: {}", hash);
-                    return new AppException(
-                            "can't find transaction with hash: " + hash, HttpStatus.NOT_FOUND);
-                });
-    }
-
-    public void deleteTransaction(Transaction transaction) {
-        Account accountTo = transaction.getAccountTo();
-        if (Objects.nonNull(accountTo)) {
-            accountTo.getTransactions().remove(transaction);
-        }
-        Account accountFrom = transaction.getAccountFrom();
-        if (Objects.nonNull(accountFrom)) {
-            accountFrom.getTransactions().remove(transaction);
-        }
-        transactionRepository.delete(transaction);
-    }
-
-    public void deleteTransaction(String hash) {
-        Transaction transaction = this.getTransaction(hash);
-        deleteTransaction(transaction);
+    public List<TransactionCategorySum> sumTransactionAmountForCategories(Boolean income, LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.sumTransactionAmountForCategoriesAndUser(income, userService.getLoggedUser(), startDate, endDate);
     }
 
     private void subtractFromBalance(Account account, Double amount) {
@@ -233,101 +365,5 @@ public class TransactionService {
         account.setBalance(account.getBalance() + amount);
     }
 
-    public Transaction updateTransaction(String hash, TransactionInput transactionInput) {
-        Transaction transaction = rollbackChanges(this.getTransaction(hash));
-        validate(
-                transactionInput.transactionType(),
-                transactionInput.accountToHash(),
-                transactionInput.accountFromHash(),
-                transactionInput.categoryHash());
 
-        switch (transactionInput.transactionType()) {
-            case EXPENSE -> {
-                Account newAccountFrom =
-                        accountService.getAccount(transactionInput.accountFromHash());
-                Category category = categoryService.getCategory(transactionInput.categoryHash());
-                if (category.getIncome()) {
-                    log.warn("category is not for \"expense\"");
-                    throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
-                }
-                SubCategory subCategory =
-                        getSubCategory(transactionInput.subCategoryHash(), category);
-                transaction.setAccountFrom(newAccountFrom);
-                newAccountFrom.getTransactions().add(transaction);
-                subtractFromBalance(transaction.getAccountFrom(), transactionInput.amount());
-                transaction.setCategory(category);
-                transaction.setSubCategory(subCategory);
-            }
-            case INCOME -> {
-                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
-                Category category = categoryService.getCategory(transactionInput.categoryHash());
-                if (!category.getIncome()) {
-                    log.warn("category is not for \"income\"");
-                    throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
-                }
-                SubCategory subCategory =
-                        getSubCategory(transactionInput.subCategoryHash(), category);
-                transaction.setAccountTo(newAccountTo);
-                newAccountTo.getTransactions().add(transaction);
-                addToBalance(transaction.getAccountTo(), transactionInput.amount());
-                transaction.setCategory(category);
-                transaction.setSubCategory(subCategory);
-            }
-            case TRANSFER -> {
-                Account newAccountFrom =
-                        accountService.getAccount(transactionInput.accountFromHash());
-                Account newAccountTo = accountService.getAccount(transactionInput.accountToHash());
-                transaction.setAccountFrom(newAccountFrom);
-                newAccountFrom.getTransactions().add(transaction);
-                transaction.setAccountTo(newAccountTo);
-                newAccountTo.getTransactions().add(transaction);
-                subtractFromBalance(transaction.getAccountFrom(), transactionInput.amount());
-                addToBalance(transaction.getAccountTo(), transactionInput.amount());
-            }
-        }
-
-        return transactionRepository.save(transaction.toBuilder()
-                .transactionType(transactionInput.transactionType())
-                .amount(transactionInput.amount())
-                .date(DateUtils.parse(transactionInput.date()))
-                .name(transactionInput.name())
-                .currency(transactionInput.currency())
-                .need(transactionInput.need())
-                .note(transactionInput.note())
-                .build());
-    }
-
-    private Transaction rollbackChanges(Transaction transaction) {
-        switch (transaction.getTransactionType()) {
-            case EXPENSE -> {
-                Account account = transaction.getAccountFrom();
-                transaction.setAccountFrom(null);
-                transaction.setCategory(null);
-                addToBalance(account, transaction.getAmount());
-                account.removeTransaction(transaction);
-            }
-            case INCOME -> {
-                Account account = transaction.getAccountTo();
-                transaction.setAccountTo(null);
-                transaction.setCategory(null);
-                subtractFromBalance(account, transaction.getAmount());
-                account.removeTransaction(transaction);
-            }
-            case TRANSFER -> {
-                Account accountTo = transaction.getAccountTo();
-                transaction.setAccountTo(null);
-                accountTo.removeTransaction(transaction);
-                subtractFromBalance(accountTo, transaction.getAmount());
-                Account accountFrom = transaction.getAccountFrom();
-                transaction.setAccountFrom(null);
-                accountFrom.removeTransaction(transaction);
-                addToBalance(accountFrom, transaction.getAmount());
-            }
-        }
-        return transaction;
-    }
-
-    List<TransactionCategorySum> sumTransactionAmountForCategories(Boolean income, LocalDateTime startDate, LocalDateTime endDate){
-        return transactionRepository.sumTransactionAmountForCategoriesAndUser(income, userService.getLoggedUser(), startDate, endDate);
-    }
 }

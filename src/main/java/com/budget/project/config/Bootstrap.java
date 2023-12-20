@@ -49,7 +49,7 @@ public class Bootstrap implements ApplicationRunner {
                 .accountType(AccountType.REGULAR)
                 .balance(21.36)
                 .currency(Currency.PLN)
-                .color("#FFCE30")
+                .color("#00B3E6")
                 .name("Santander")
                 .description("Main account")
                 .build());
@@ -57,7 +57,7 @@ public class Bootstrap implements ApplicationRunner {
                 .accountType(AccountType.SAVINGS)
                 .balance(1.2)
                 .currency(Currency.PLN)
-                .color("#FFCE30")
+                .color("#33FFCC")
                 .name("Santander - saving")
                 .description("savings")
                 .parentHash(account1.getHash())
@@ -67,7 +67,7 @@ public class Bootstrap implements ApplicationRunner {
                 .accountType(AccountType.SAVINGS)
                 .balance(1.2)
                 .currency(Currency.PLN)
-                .color("#746AB0")
+                .color("#3366E6")
                 .name("deposit")
                 .archived(true)
                 .description("just an deposit account")
@@ -77,7 +77,7 @@ public class Bootstrap implements ApplicationRunner {
                 .accountType(AccountType.REGULAR)
                 .balance(14.21)
                 .currency(Currency.PLN)
-                .color("#E389B9")
+                .color("#669110")
                 .name("mBank")
                 .description("secondary account")
                 .build());
@@ -85,55 +85,55 @@ public class Bootstrap implements ApplicationRunner {
                 .accountType(AccountType.REGULAR)
                 .balance(14.21)
                 .currency(Currency.PLN)
-                .color("#E389B9")
+                .color("#6680B3")
                 .name("AliorBank")
                 .description("third account")
                 .build());
         Category category1 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .color("#FFCE30")
+                .color("#80B300")
                 .name("Salary")
                 .subCategories(List.of())
                 .build());
 
         Category category1_1 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .color("#FFCE30")
+                .color("#809900")
                 .name("Glovo")
                 .subCategories(List.of())
                 .build());
 
         Category category1_2 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .color("#FFCE30")
+                .color("#999966")
                 .name("Atos")
                 .subCategories(List.of())
                 .build());
 
         Category category2 = categoryService.createCategory(CategoryInput.builder()
                 .income(true)
-                .color("#E389B9")
+                .color("#B34D4D")
                 .name("Other")
                 .subCategories(List.of())
                 .build());
 
         Category category3 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .color("#E389B9")
+                .color("#CCFF1A")
                 .name("Food")
                 .subCategories(List.of())
                 .build());
 
         Category category4 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .color("#E389B9")
+                .color("#FFB399")
                 .name("Restaurant")
                 .subCategories(List.of())
                 .build());
 
         Category category5 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .color("#746AB0")
+                .color("#E6B333")
                 .name("Grocery")
                 .subCategories(List.of(
                         new SubCategoryInput("Fruit", null),
@@ -142,7 +142,7 @@ public class Bootstrap implements ApplicationRunner {
 
         Category category6 = categoryService.createCategory(CategoryInput.builder()
                 .income(false)
-                .color("#746AB0")
+                .color("#E6B3B3")
                 .name("Entertainment")
                 .subCategories(List.of())
                 .build());

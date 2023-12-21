@@ -1,12 +1,12 @@
 package com.budget.project.model.db;
 
 import com.budget.project.model.dto.request.input.CategoryInput;
-
 import jakarta.persistence.*;
-
 import lombok.*;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -31,10 +31,6 @@ public class Category {
     @Column(nullable = false)
     private Boolean income;
 
-    //    @ManyToOne(cascade = CascadeType.DETACH)
-    //    @ToString.Exclude
-    //    private Category parent;
-
     @OneToMany(mappedBy = "parent", cascade = CascadeType.DETACH)
     private Set<SubCategory> subCategories = new HashSet<>();
 
@@ -47,7 +43,7 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.DETACH)
     private Set<Transaction> transactions = new HashSet<>();
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", cascade = CascadeType.DETACH)
     private Set<Budget> budgets = new HashSet<>();
 
     public static Category of(CategoryInput categoryInput, User user) {
@@ -59,10 +55,8 @@ public class Category {
                 .hash(UUID.randomUUID().toString())
                 .transactions(new HashSet<>())
                 .archived(false)
+                .budgets(new HashSet<>())
                 .build();
     }
 
-    //    public static Category of(CategoryInput categoryInput, User user, Category parent) {
-    //        return Category.of(categoryInput, user).toBuilder().parent(parent).build();
-    //    }
 }

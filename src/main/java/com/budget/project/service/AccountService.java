@@ -109,15 +109,6 @@ public class AccountService {
 
     public Account updateAccount(String hash, AccountInput accountInput) {
         Account account = this.getAccount(hash);
-        //        if (parentChanged(accountInput.parentHash(), account)) {
-        //            if (Objects.nonNull(account.getParent())) {
-        //                account.getParent().getSubAccounts().remove(account);
-        //            }
-        //            Account newParent = this.getAccount(accountInput.parentHash());
-        //            account.setParent(newParent);
-        //            newParent.getSubAccounts().add(account);
-        //        }
-
         account = account.toBuilder()
                 .accountType(accountInput.accountType())
                 .archived(accountInput.archived())

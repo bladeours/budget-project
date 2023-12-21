@@ -53,7 +53,7 @@ public class User implements UserDetails {
             inverseJoinColumns = {@JoinColumn(name = "category_id")})
     Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.DETACH)
     Set<Budget> budgets = new HashSet<>();
 
     @Enumerated(EnumType.STRING)

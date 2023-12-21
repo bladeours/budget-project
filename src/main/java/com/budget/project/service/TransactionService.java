@@ -6,11 +6,14 @@ import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.*;
 import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
+import com.budget.project.service.projection.TransactionCategoryNameSum;
 import com.budget.project.service.projection.TransactionCategorySum;
 import com.budget.project.service.repository.TransactionRepository;
 import com.budget.project.utils.DateUtils;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -270,7 +273,6 @@ public class TransactionService {
                 transactionInput.categoryHash());
     }
 
-
     @SneakyThrows
     private void validate(
             TransactionType transactionType,
@@ -353,8 +355,16 @@ public class TransactionService {
         return transaction;
     }
 
-    public List<TransactionCategorySum> sumTransactionAmountForCategories(Boolean income, LocalDateTime startDate, LocalDateTime endDate) {
-        return transactionRepository.sumTransactionAmountForCategoriesAndUser(income, userService.getLoggedUser(), startDate, endDate);
+    public List<TransactionCategoryNameSum> sumTransactionAmountForCategoriesName(
+            Boolean income, LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.sumTransactionAmountForCategoriesNameAndUser(
+                income, userService.getLoggedUser(), startDate, endDate);
+    }
+
+    public List<TransactionCategorySum> sumTransactionAmountForCategories(
+            LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.sumTransactionAmountForCategoriesAndUser(
+                userService.getLoggedUser(), startDate, endDate);
     }
 
     private void subtractFromBalance(Account account, Double amount) {
@@ -364,6 +374,4 @@ public class TransactionService {
     private void addToBalance(Account account, Double amount) {
         account.setBalance(account.getBalance() + amount);
     }
-
-
 }

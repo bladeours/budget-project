@@ -6,6 +6,7 @@ import com.budget.project.model.db.AccountType;
 import com.budget.project.model.db.Currency;
 import com.budget.project.model.db.TransactionType;
 import com.budget.project.model.dto.request.input.AccountInput;
+import com.budget.project.model.dto.request.input.BudgetInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -130,5 +131,21 @@ public class TestUtils {
         authService.register(authenticationRequest);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 authenticationRequest.email(), authenticationRequest.password()));
+    }
+
+    public static BudgetInput getBudgetInput(String categoryHash, String date){
+        return BudgetInput.builder()
+                .plannedBudget(21.15)
+                .categoryHash(categoryHash)
+                .date(date)
+                .build();
+    }
+
+    public static BudgetInput getBudgetInput(String categoryHash){
+        return BudgetInput.builder()
+                .plannedBudget(21.15)
+                .categoryHash(categoryHash)
+                .date(OffsetDateTime.now().toString())
+                .build();
     }
 }

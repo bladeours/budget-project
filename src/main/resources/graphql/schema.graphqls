@@ -12,6 +12,7 @@ type Query {
 
     getAmountByCategory(startDate: String!, endDate: String!, income: Boolean!): [CategoryAmount]
 
+    getBudgets(date: String): [BudgetDto]
 }
 
 
@@ -32,6 +33,10 @@ updateTransaction(hash: String!, transactionInput: TransactionInput!): Transacti
 addCategory(categoryInput: CategoryInput!): Category
 deleteCategory(hash: String!): Boolean
 updateCategory(hash: String!, categoryUpdateInput: CategoryUpdateInput!): Category
+
+addBudget(budgetInput: BudgetInput!): Budget
+updateBudget(plannedBudget: Float!, hash: String!): Budget
+deleteBudget(hash: String!): Boolean
 }
 
 

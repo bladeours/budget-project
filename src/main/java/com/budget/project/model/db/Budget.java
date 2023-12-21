@@ -1,11 +1,10 @@
 package com.budget.project.model.db;
 
 import com.budget.project.utils.YearMonthDateAttributeConverter;
+
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 import java.time.YearMonth;
 
@@ -14,6 +13,7 @@ import java.time.YearMonth;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Budget {
     @Id
     @GeneratedValue
@@ -26,16 +26,21 @@ public class Budget {
     @Convert(converter = YearMonthDateAttributeConverter.class)
     private YearMonth date;
 
+    @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true)
     private String hash;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     private User user;
 
     @ManyToOne
     private Trip trip;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(nullable = false, name = "category_id")
     private Category category;
+
+    @ManyToOne
+    @JoinColumn(name = "sub_category_id")
+    private SubCategory subCategory;
 }

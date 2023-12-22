@@ -13,11 +13,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.SessionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,29 +93,29 @@ public class BudgetService {
         List<BudgetDto> budgetDtoList = new ArrayList<>();
         for (TransactionCategorySum transactionCategoryNameSum : transactionCategoryNameSums) {
             Category category = transactionCategoryNameSum.getCategory();
-            Budget budget = Objects.requireNonNullElse(
-                    getBudgetFromListForCategory(budgets, category),
-                    Budget.builder().plannedBudget(0.0).category(category).build());
-            Double percent = getPercent(
-                    budget.getPlannedBudget(), transactionCategoryNameSum.getSumForCategory());
-            budgetDtoList.add(new BudgetDto(
-                    budget,
-                    percent,
-                    budget.getPlannedBudget() - transactionCategoryNameSum.getSumForCategory()));
+            Budget budget = getBudgetFromListForCategory(budgets, category);
+            if(Objects.isNull(budget)) {
+                budget = Budget.builder().plannedBudget(0.0).category(category).build();
+
+            }
+            budgetDtoList.add(getBudgetDto(budget, transactionCategoryNameSum.getSumForCategory()));
         }
         return budgetDtoList;
     }
 
-    private Double getPercent(Double plannedBudget, Double sumForCategory) {
-        if (plannedBudget == 0) {
-            return 0.0;
+    private BudgetDto getBudgetDto(Budget budget, Double sumForCategory) {
+        double percent = 0.0;
+        double left = 0.0;
+        if (budget.getPlannedBudget() != 0) {
+            percent = sumForCategory / budget.getPlannedBudget();
+            left = budget.getPlannedBudget() - sumForCategory;
         }
-        return sumForCategory / plannedBudget;
+        return new BudgetDto(budget, percent, left);
     }
 
     private List<TransactionCategorySum> normalizeTransactionCategorySum(List<TransactionCategorySum> transactionCategorySums){
         List<Category> categories = categoryService.getCategories(null);
-        categories = categories.stream().filter(c -> !c.getIncome()).toList();
+        categories = categories.stream().filter(c -> !c.getIncome() && !c.getArchived()).toList();
         for(Category category: categories) {
             if(transactionCategorySums.stream().noneMatch(t -> t.getCategory().equals(category))){
                 transactionCategorySums.add(new TransactionCategorySum() {
@@ -153,8 +153,13 @@ public class BudgetService {
 
     public Budget updateBudget(Double plannedBudget, String hash) {
         Budget budget = this.getBudget(hash);
-        budget.setPlannedBudget(plannedBudget);
-        return budget;
+        budgetRepository.delete(budget);
+
+        return createBudget(BudgetInput.builder()
+                .date(OffsetDateTime.now().withYear(budget.getDate().getYear()).withMonth(budget.getDate().getMonthValue()).toString())
+                .categoryHash(budget.getCategory().getHash())
+                .plannedBudget(plannedBudget)
+                .build());
     }
 
     public Boolean deleteBudget(String hash) {

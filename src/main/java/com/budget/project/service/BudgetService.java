@@ -102,7 +102,7 @@ public class BudgetService {
             }
             budgetDtoList.add(getBudgetDto(budget, transactionCategoryNameSum.getSumForCategory()));
         }
-        return budgetDtoList;
+        return budgetDtoList.stream().sorted((b1,b2) -> b1.budget().getPlannedBudget() < b2.budget().getPlannedBudget() ? 1 : -1).toList();
     }
 
     private BudgetDto getBudgetDto(Budget budget, Double sumForCategory) {

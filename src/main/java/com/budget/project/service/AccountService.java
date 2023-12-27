@@ -9,6 +9,7 @@ import com.budget.project.model.db.User;
 import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.repository.AccountRepository;
+import com.budget.project.service.repository.PlannedIncomeRepository;
 
 import jakarta.transaction.Transactional;
 

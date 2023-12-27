@@ -9,7 +9,8 @@ type Budget {
 type BudgetDto {
     budget: Budget,
     percent: Float,
-    left: Float
+    left: Float,
+    sum: Float
 }
 
 input BudgetInput {

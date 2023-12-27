@@ -80,7 +80,9 @@ public class BudgetService {
         return getBudgetDtoList(yearMonth);
     }
 
-    private List<BudgetDto> getBudgetDtoList(YearMonth yearMonth) {
+
+
+    public List<BudgetDto> getBudgetDtoList(YearMonth yearMonth) {
         Integer firstDayOfTheMonth =
                 userService.getLoggedUser().getSettings().getFirstDayOfTheMonth();
         LocalDateTime startDate = yearMonth.atDay(firstDayOfTheMonth).atStartOfDay();
@@ -107,7 +109,7 @@ public class BudgetService {
         double percent = 0.0;
         double left = 0.0;
         if (budget.getPlannedBudget() != 0) {
-            percent = sumForCategory / budget.getPlannedBudget();
+            percent = (sumForCategory / budget.getPlannedBudget()) * 100;
             left = budget.getPlannedBudget() - sumForCategory;
         }
         return new BudgetDto(budget, percent, left);
@@ -141,7 +143,7 @@ public class BudgetService {
                 .orElse(null);
     }
 
-    public Budget getBudget(String hash){
+    public Budget getBudget(String hash) {
         return budgetRepository
                 .findByHashAndUser(hash, userService.getLoggedUser())
                 .orElseThrow(() -> {
@@ -166,4 +168,5 @@ public class BudgetService {
         this.budgetRepository.delete(this.getBudget(hash));
         return true;
     }
+
 }

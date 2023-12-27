@@ -29,6 +29,7 @@ public class BudgetController {
         return budgetService.getBudgetDtoList(date);
     }
 
+
     @MutationMapping
     public Budget updateBudget(@Argument Double plannedBudget, @Argument String hash) {
         return budgetService.updateBudget(plannedBudget, hash);

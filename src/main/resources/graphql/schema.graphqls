@@ -12,41 +12,46 @@ type Query {
 
     getAmountByCategory(startDate: String!, endDate: String!, income: Boolean!): [CategoryAmount]
 
-    getBudgets(date: String): [BudgetDto]
+    getBudgets(date: String!): [BudgetDto]
+    getPlannedIncome(date: String!): PlannedIncomeDto
 }
 
 
 type Mutation {
-register(authInput: AuthInput!): JwtResponse
-authenticate(authInput: AuthInput!): JwtResponse
-refreshToken: JwtResponse
-logout: Boolean
+    register(authInput: AuthInput!): JwtResponse
+    authenticate(authInput: AuthInput!): JwtResponse
+    refreshToken: JwtResponse
+    logout: Boolean
 
-addAccount(accountInput: AccountInput!): Account
-deleteAccount(hash: String!, removeSub: Boolean!): Boolean
-updateAccount(hash: String!, accountInput: AccountInput!): Account
+    addAccount(accountInput: AccountInput!): Account
+    deleteAccount(hash: String!, removeSub: Boolean!): Boolean
+    updateAccount(hash: String!, accountInput: AccountInput!): Account
 
-addTransaction(transactionInput: TransactionInput!): Transaction
-deleteTransaction(hash: String!): Boolean
-updateTransaction(hash: String!, transactionInput: TransactionInput!): Transaction
+    addTransaction(transactionInput: TransactionInput!): Transaction
+    deleteTransaction(hash: String!): Boolean
+    updateTransaction(hash: String!, transactionInput: TransactionInput!): Transaction
 
-addCategory(categoryInput: CategoryInput!): Category
-deleteCategory(hash: String!): Boolean
-updateCategory(hash: String!, categoryUpdateInput: CategoryUpdateInput!): Category
+    addCategory(categoryInput: CategoryInput!): Category
+    deleteCategory(hash: String!): Boolean
+    updateCategory(hash: String!, categoryUpdateInput: CategoryUpdateInput!): Category
 
-addBudget(budgetInput: BudgetInput!): Budget
-updateBudget(plannedBudget: Float!, hash: String!): Budget
-deleteBudget(hash: String!): Boolean
+    addBudget(budgetInput: BudgetInput!): Budget
+    updateBudget(plannedBudget: Float!, hash: String!): Budget
+    deleteBudget(hash: String!): Boolean
+
+    addPlannedIncome(plannedIncomeInput: PlannedIncomeInput!): PlannedIncome
+    updatePlannedIncome(hash: String!, amount: Float!): PlannedIncome
+    deletePlannedIncome(hash: String!): Boolean
 }
 
 
 input Page {
-number: Int!
-size: Int!
+    number: Int!
+    size: Int!
 }
 
 enum Currency {
-PLN
-EUR
+    PLN
+    EUR
 }
 

@@ -1,0 +1,16 @@
+type PlannedIncome {
+  hash: String,
+  amount: Float!,
+  date: String!
+}
+
+input PlannedIncomeInput {
+  amount: Float!,
+  date: String!
+}
+
+type PlannedIncomeDto {
+  plannedIncome: PlannedIncome!,
+  left: Float!,
+  percent: Float!
+}

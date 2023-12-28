@@ -95,7 +95,7 @@ public class TransactionService {
     }
 
     public void deleteTransaction(Transaction transaction) {
-        // TODO rollback changes
+        transaction = rollbackChanges(transaction);
         Account accountTo = transaction.getAccountTo();
         if (Objects.nonNull(accountTo)) {
             accountTo.getTransactions().remove(transaction);

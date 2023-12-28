@@ -1,6 +1,7 @@
 package com.budget.project.service;
 
 import com.budget.project.model.dto.CategoryAmount;
+import com.budget.project.model.dto.IncomeExpense;
 import com.budget.project.service.projection.TransactionCategoryNameSum;
 import com.budget.project.utils.DateUtils;
 
@@ -28,5 +29,9 @@ public class StatisticsService {
                 .map(t -> new CategoryAmount(
                         t.getCategoryName(), t.getSumForCategory(), t.getCategoryColor()))
                 .toList();
+    }
+
+    public IncomeExpense getIncomeExpense(String date) {
+      return null;
     }
 }

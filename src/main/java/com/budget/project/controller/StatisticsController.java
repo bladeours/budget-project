@@ -1,6 +1,7 @@
 package com.budget.project.controller;
 
 import com.budget.project.model.dto.CategoryAmount;
+import com.budget.project.model.dto.IncomeExpense;
 import com.budget.project.service.StatisticsService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,5 +22,10 @@ public class StatisticsController {
     public List<CategoryAmount> getAmountByCategory(
             @Argument String startDate, @Argument String endDate, @Argument Boolean income) {
         return statisticsService.getAmountByCategory(startDate, endDate, income);
+    }
+
+    @QueryMapping
+    public IncomeExpense getIncomeExpense(@Argument String date) {
+        return statisticsService.getIncomeExpense(date);
     }
 }

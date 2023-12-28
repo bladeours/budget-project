@@ -3,3 +3,8 @@ type CategoryAmount {
     amount: Float!,
     color: String!
 }
+
+type IncomeExpense{
+    income: Float!,
+    expense: Float!
+}

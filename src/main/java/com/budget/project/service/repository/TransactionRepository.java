@@ -2,6 +2,7 @@ package com.budget.project.service.repository;
 
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.db.User;
+import com.budget.project.model.dto.IncomeExpense;
 import com.budget.project.service.projection.TransactionCategoryNameSum;
 import com.budget.project.service.projection.TransactionCategorySum;
 
@@ -45,4 +46,8 @@ public interface TransactionRepository
             + " desc ")
     List<TransactionCategorySum> sumTransactionAmountForCategoriesAndUser(
             User user, LocalDateTime startDate, LocalDateTime endDate);
+
+
+        @Query("Select ")
+        IncomeExpense getIncomeExpense(LocalDateTime startDate, LocalDateTime endDate, User user);
 }

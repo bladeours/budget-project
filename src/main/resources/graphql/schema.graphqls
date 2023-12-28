@@ -12,6 +12,9 @@ type Query {
 
     getAmountByCategory(startDate: String!, endDate: String!, income: Boolean!): [CategoryAmount]
     getIncomeExpense(date: String!): IncomeExpense
+    getExpensesPerDayOfTheWeek(date: String!): [Float]
+    getTopAccounts: [AccountDto!]!
+    getExpensesPerMonth(date: String!): [Float!]!
 
     getBudgets(date: String!): [BudgetDto]
     getPlannedIncome(date: String!): PlannedIncomeDto

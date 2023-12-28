@@ -2,11 +2,7 @@ package com.budget.project.filter.service;
 
 import com.budget.project.exception.AppException;
 import com.budget.project.filter.model.*;
-import com.budget.project.model.db.Account;
-import com.budget.project.model.db.Category;
-import com.budget.project.model.db.Transaction;
-import com.budget.project.model.db.User;
-import com.budget.project.service.CategoryService;
+import com.budget.project.model.db.*;
 import com.budget.project.service.UserService;
 import com.budget.project.utils.DateUtils;
 
@@ -15,7 +11,6 @@ import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -29,7 +24,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilterService {
     private final UserService userService;
-
 
     public <T> Specification<T> getSpecification(Filter oldFilter, Class<T> tClass) {
         return (root, query, criteriaBuilder) -> {
@@ -65,7 +59,8 @@ public class FilterService {
         }
     }
 
-    private <T> Predicate toPredicate(Filter oldFilter, CriteriaBuilder criteriaBuilder, Root<T> root)
+    private <T> Predicate toPredicate(
+            Filter oldFilter, CriteriaBuilder criteriaBuilder, Root<T> root)
             throws InvalidDataAccessApiUsageException {
         final Filter filter = normalizeFilter(oldFilter);
 
@@ -83,7 +78,12 @@ public class FilterService {
             predicates.addAll(getBooleanPredicates(filter.booleanFilters(), criteriaBuilder, root));
         }
         if (Objects.nonNull(filter.accountTypeFilters())) {
-            predicates.addAll(getAccountTypePredicates(filter.accountTypeFilters(), criteriaBuilder, root));
+            predicates.addAll(
+                    getAccountTypePredicates(filter.accountTypeFilters(), criteriaBuilder, root));
+        }
+        if (Objects.nonNull(filter.transactionTypeFilters())) {
+            predicates.addAll(getTransactionTypePredicates(
+                    filter.transactionTypeFilters(), criteriaBuilder, root));
         }
 
         if (filter.subFilters() != null) {
@@ -113,15 +113,17 @@ public class FilterService {
         }
     }
 
-    private Filter normalizeFilter(Filter filter){
-        if(Objects.nonNull(filter.subFilters())){
+    private Filter normalizeFilter(Filter filter) {
+        if (Objects.nonNull(filter.subFilters())) {
             filter = filter.toBuilder()
                     .subFilters(filter.subFilters().stream()
                             .filter(f -> Objects.nonNull(f) && Objects.nonNull(f.logicOperator()))
-                            .collect(Collectors.toSet())).build();
+                            .collect(Collectors.toSet()))
+                    .build();
         }
         return filter;
     }
+
     private <T> List<Predicate> getBooleanPredicates(
             Set<BooleanExpression> booleanExpressions,
             CriteriaBuilder criteriaBuilder,
@@ -146,6 +148,19 @@ public class FilterService {
         return predicates;
     }
 
+    private <T> List<Predicate> getTransactionTypePredicates(
+            Set<TransactionTypeExpression> transactionTypeExpressions,
+            CriteriaBuilder criteriaBuilder,
+            Root<T> root) {
+        List<Predicate> predicates = new ArrayList<>();
+        for (TransactionTypeExpression transactionTypeExpression : transactionTypeExpressions) {
+            predicates.add(criteriaBuilder.equal(
+                    root.get(transactionTypeExpression.field()),
+                    transactionTypeExpression.value()));
+        }
+        return predicates;
+    }
+
     private <T> List<Predicate> getStringPredicates(
             Set<StringExpression> stringExpressions, CriteriaBuilder criteriaBuilder, Root<T> root)
             throws InvalidDataAccessApiUsageException {
@@ -163,16 +178,14 @@ public class FilterService {
         return predicates;
     }
 
-
     private Expression<?> getField(String field, Root<?> root) {
         String[] split = field.split("\\.");
-        if(split.length == 1) {
+        if (split.length == 1) {
             return root.get(split[0]);
         }
-        if(split.length == 2) {
+        if (split.length == 2) {
             return root.join(split[0], JoinType.LEFT).get(split[1]);
-        }
-        else {
+        } else {
             log.warn("three or more level of filtering is not implemented yet");
             throw new AppException("Something went wrong with filtering", HttpStatus.BAD_REQUEST);
         }

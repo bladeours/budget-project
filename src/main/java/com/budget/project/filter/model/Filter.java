@@ -13,5 +13,6 @@ public record Filter(
         Set<DoubleExpression> doubleFilters,
         Set<DateExpression> dateFilters,
         Set<AccountTypeExpression> accountTypeFilters,
+        Set<TransactionTypeExpression> transactionTypeFilters,
         LogicOperator logicOperator,
         Set<Filter> subFilters) {}

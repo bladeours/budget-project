@@ -8,3 +8,8 @@ type IncomeExpense{
     income: Float!,
     expense: Float!
 }
+
+type AccountDto {
+    balance: Float!,
+    name: String!
+}

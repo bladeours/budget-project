@@ -6,6 +6,8 @@ import com.budget.project.filter.service.FilterService;
 import com.budget.project.model.db.*;
 import com.budget.project.model.dto.CustomPage;
 import com.budget.project.model.dto.request.input.TransactionInput;
+import com.budget.project.service.projection.DayExpense;
+import com.budget.project.service.projection.MonthExpense;
 import com.budget.project.service.projection.TransactionCategoryNameSum;
 import com.budget.project.service.projection.TransactionCategorySum;
 import com.budget.project.service.repository.TransactionRepository;
@@ -93,7 +95,7 @@ public class TransactionService {
     }
 
     public void deleteTransaction(Transaction transaction) {
-        //TODO rollback changes
+        // TODO rollback changes
         Account accountTo = transaction.getAccountTo();
         if (Objects.nonNull(accountTo)) {
             accountTo.getTransactions().remove(transaction);
@@ -383,5 +385,16 @@ public class TransactionService {
 
     public Optional<Double> getIncome(LocalDateTime startDate, LocalDateTime endDate) {
         return transactionRepository.getIncome(startDate, endDate, userService.getLoggedUser());
+    }
+
+    public List<DayExpense> getExpensesPerDayOfTheWeek(
+            LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.getExpensesPerDayOfTheWeek(
+                startDate, endDate, userService.getLoggedUser());
+    }
+
+    public List<MonthExpense> getExpensesMonth(LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.getExpensesMonth(
+                startDate, endDate, userService.getLoggedUser());
     }
 }

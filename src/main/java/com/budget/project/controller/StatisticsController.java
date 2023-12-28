@@ -1,5 +1,6 @@
 package com.budget.project.controller;
 
+import com.budget.project.model.dto.AccountDto;
 import com.budget.project.model.dto.CategoryAmount;
 import com.budget.project.model.dto.IncomeExpense;
 import com.budget.project.service.StatisticsService;
@@ -27,5 +28,20 @@ public class StatisticsController {
     @QueryMapping
     public IncomeExpense getIncomeExpense(@Argument String date) {
         return statisticsService.getIncomeExpense(date);
+    }
+
+    @QueryMapping
+    public List<Double> getExpensesPerDayOfTheWeek(@Argument String date) {
+        return statisticsService.getExpensesPerDayOfTheWeek(date);
+    }
+
+    @QueryMapping
+    public List<AccountDto> getTopAccounts() {
+        return statisticsService.getTopAccounts();
+    }
+
+    @QueryMapping
+    public List<Double> getExpensesPerMonth(@Argument String date) {
+        return statisticsService.getExpensesPerMonth(date);
     }
 }

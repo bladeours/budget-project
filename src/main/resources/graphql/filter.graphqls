@@ -4,6 +4,7 @@ input Filter {
     booleanFilters: [BooleanExpression]
     dateFilters: [DateExpression]
     accountTypeFilters: [AccountTypeExpression]
+    transactionTypeFilters: [TransactionTypeExpression]
     logicOperator: LogicOperator
     subFilters: [Filter]
 }
@@ -56,5 +57,10 @@ input DateExpression {
 
 enum DateOperator {
     BETWEEN
+}
+
+input TransactionTypeExpression {
+    field: String!,
+    value: TransactionType!
 }
 

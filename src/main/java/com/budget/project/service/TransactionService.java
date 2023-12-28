@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -374,5 +375,13 @@ public class TransactionService {
 
     private void addToBalance(Account account, Double amount) {
         account.setBalance(account.getBalance() + amount);
+    }
+
+    public Optional<Double> getExpense(LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.getExpense(startDate, endDate, userService.getLoggedUser());
+    }
+
+    public Optional<Double> getIncome(LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.getIncome(startDate, endDate, userService.getLoggedUser());
     }
 }

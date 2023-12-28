@@ -11,6 +11,7 @@ type Query {
     getCategory(hash: String!): Category
 
     getAmountByCategory(startDate: String!, endDate: String!, income: Boolean!): [CategoryAmount]
+    getIncomeExpense(date: String!): IncomeExpense
 
     getBudgets(date: String!): [BudgetDto]
     getPlannedIncome(date: String!): PlannedIncomeDto

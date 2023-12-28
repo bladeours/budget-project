@@ -45,4 +45,19 @@ public interface TransactionRepository
             + " desc ")
     List<TransactionCategorySum> sumTransactionAmountForCategoriesAndUser(
             User user, LocalDateTime startDate, LocalDateTime endDate);
+
+
+    @Query("SELECT sum(t.amount) FROM Transaction t"
+            + " where (:user MEMBER OF t.category.users) and "
+            + "(t.date between :startDate and :endDate) and (t.transactionType = 'INCOME')"
+            + " order by sum(t.amount)"
+            + " desc ")
+    Optional<Double>  getIncome(LocalDateTime startDate, LocalDateTime endDate, User user);
+
+    @Query("SELECT sum(t.amount) FROM Transaction t"
+            + " where (:user MEMBER OF t.category.users) and "
+            + "(t.date between :startDate and :endDate) and (t.transactionType = 'EXPENSE')"
+            + " order by sum(t.amount)"
+            + " desc ")
+    Optional<Double>  getExpense(LocalDateTime startDate, LocalDateTime endDate, User user);
 }

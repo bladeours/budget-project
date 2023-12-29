@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -37,25 +38,12 @@ public class AccountService {
 
     @SneakyThrows
     public Account createAccount(AccountInput accountInput) {
-        Account account;
-        if (Objects.nonNull(accountInput.parentHash())) {
-            Account parent = this.getAccount(accountInput.parentHash());
-            if (Objects.nonNull(parent.getParent())) {
-                log.warn("only one level of subCategories is possible");
-                throw new AppException(
-                        "only one level of subCategories is possible", HttpStatus.BAD_REQUEST);
-            }
-            account = Account.of(accountInput, userService.getLoggedUser(), parent);
-            account = accountRepository.save(account);
-            if (Objects.isNull(parent.getSubAccounts())) {
-                parent.setSubAccounts(Set.of(account));
-            } else {
-                parent.getSubAccounts().add(account);
-            }
-        } else {
-            account = Account.of(accountInput, userService.getLoggedUser());
-            account = accountRepository.save(account);
+        if(this.getAccountByName(accountInput.name()).isPresent()){
+            log.warn("There can not be two accounts with the same name: {}", accountInput.name());
+            throw new AppException("There can not be two accounts with the same name", HttpStatus.BAD_REQUEST);
         }
+        Account account = Account.of(accountInput, userService.getLoggedUser());
+        account = accountRepository.save(account);
         User user = userService.getLoggedUser();
         user.getAccounts().add(account);
 
@@ -88,6 +76,12 @@ public class AccountService {
                     return new AppException(
                             "can't find account with hash: " + hash, HttpStatus.NOT_FOUND);
                 });
+    }
+
+    @SneakyThrows
+    public Optional<Account> getAccountByName(String name) {
+        return accountRepository
+                .findByNameAndUsersContainingIgnoreCase(name, userService.getLoggedUser());
     }
 
     @SneakyThrows

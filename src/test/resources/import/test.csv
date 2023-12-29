@@ -1,0 +1,7 @@
+"DATE","TYPE",FROM ACCOUNT/CATEGORY, "TO ACCOUNT/CATEGORY","AMOUNT","NOTE",NEED
+"21/02/2022","EXPENSE",Santander,Grocery,12.12,test note,true
+"21/02/2022","EXPENSE",Santander,Restaurant,12.12,test note,true
+"21/02/2022","INCOME",Salary,mBank,12.12,test note,true
+"21/02/2022","INCOME",Salary_2,mBank,12.12,test note,true
+"21/02/2022","TRANSFER",mBank,Santander,12.12,test note,true
+"21/02/2022","TRANSFER",Santander,alior,12.12,test note,true

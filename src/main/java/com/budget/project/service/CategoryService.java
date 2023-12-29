@@ -124,12 +124,11 @@ public class CategoryService {
                 .forEach(this::deleteSubCategory);
 
         Set<SubCategoryInput> subCategoriesToAdd = new HashSet<>();
-        if(Objects.nonNull(categoryUpdateInput.subCategories())){
+        if (Objects.nonNull(categoryUpdateInput.subCategories())) {
             subCategoriesToAdd = categoryUpdateInput.subCategories().stream()
                     .filter(c -> Objects.isNull(c.hash()))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(HashSet::new));
         }
-
 
         for (SubCategoryInput subCategoryInput : subCategoriesToAdd) {
             category = this.addSubCategory(subCategoryInput.name(), category);
@@ -151,5 +150,9 @@ public class CategoryService {
                     return new AppException(
                             "can't find subCategory with hash: " + hash, HttpStatus.NOT_FOUND);
                 });
+    }
+    public Optional<Category> getCategoryByName(String name) {
+        return categoryRepository
+                .findCategoryByHashAndUsersContainingIgnoreCase(name, userService.getLoggedUser());
     }
 }

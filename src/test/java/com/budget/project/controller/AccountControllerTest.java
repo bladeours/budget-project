@@ -87,38 +87,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    void shouldReturnError_whenMoreThanOneLevelSubAccount() {
-        login(USER_1, authService);
-        Account accountParent = accountService.createAccount(getAccountInput("parent"));
-        Account accountChild = accountService.createAccount(getAccountInput("child").toBuilder()
-                .parentHash(accountParent.getHash())
-                .build());
-        // language=GraphQL
-        String mutation =
-                """
-				mutation($accountInput: AccountInput!) {
-				    addAccount(accountInput: $accountInput){
-				        accountType
-				        hash
-				        name
-				        balance
-				    }
-				}
-				""";
-
-        graphQlTester
-                .document(mutation)
-                .variable(
-                        "accountInput",
-                        TestUtils.toMap(getAccountInput("name").toBuilder()
-                                .parentHash(accountChild.getHash())
-                                .build()))
-                .execute()
-                .errors()
-                .expect(errorTypeEquals(BAD_REQUEST));
-    }
-
-    @Test
     void shouldGetAccount_whenGetProperRequest() {
         login(USER_1, authService);
 
@@ -274,36 +242,6 @@ public class AccountControllerTest {
                 () -> assertThrows(
                         AppException.class,
                         () -> transactionService.getTransaction(transaction.getHash())));
-    }
-
-    @Test
-    void shouldRemoveAccountAndSubAccounts_whenGetProperInput() {
-        login(USER_1, authService);
-        Account accountParent = accountService.createAccount(getAccountInput("parent"));
-        Account accountChild = accountService.createAccount(getAccountInput("child").toBuilder()
-                .parentHash(accountParent.getHash())
-                .build());
-
-        // language=GraphQL
-        String mutation =
-                """
-				mutation($hash: String!) {
-				    deleteAccount(hash: $hash, removeSub: true)
-				}
-				""";
-
-        graphQlTester
-                .document(mutation)
-                .variable("hash", accountParent.getHash())
-                .execute();
-
-        assertAll(
-                () -> assertThrows(
-                        AppException.class,
-                        () -> accountService.getAccount(accountParent.getHash())),
-                () -> assertThrows(
-                        AppException.class,
-                        () -> accountService.getAccount(accountChild.getHash())));
     }
 
     @Test

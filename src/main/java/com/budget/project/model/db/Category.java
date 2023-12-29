@@ -54,6 +54,7 @@ public class Category {
                 .users(Set.of(user))
                 .hash(UUID.randomUUID().toString())
                 .transactions(new HashSet<>())
+                .subCategories(new HashSet<>())
                 .archived(false)
                 .budgets(new HashSet<>())
                 .build();

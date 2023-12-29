@@ -23,6 +23,8 @@ public interface AccountRepository
 
     Optional<Account> findByHashAndUsersContainingIgnoreCase(String hash, User user);
 
+    Optional<Account> findByNameAndUsersContainingIgnoreCase(String name, User user);
+
     @Query("SELECT a FROM Account a"
             + " where (:user MEMBER OF a.users) and "
             + "a.archived = false"

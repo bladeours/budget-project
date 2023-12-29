@@ -15,6 +15,8 @@ public interface CategoryRepository
         extends JpaRepository<Category, Long>, JpaSpecificationExecutor<Category> {
     Optional<Category> findCategoryByHashAndUsersContainingIgnoreCase(String hash, User user);
 
+    Optional<Category> findCategoryByNameAndUsersContainingIgnoreCase(String hash, User user);
+
     Page<Category> findAllByUsersContaining(PageRequest pageRequest, User user);
 
     List<Category> findAllByUsersContaining(User user);

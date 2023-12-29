@@ -145,7 +145,7 @@ public class BudgetControllerTest {
                         .filter(b -> b.budget().getHash().equals(budget1.getHash()))
                         .findFirst()
                         .get()
-                        .percent()).isEqualTo(transaction.getAmount() / budget1.getPlannedBudget())
+                        .percent()).isEqualTo(transaction.getAmount() / budget1.getPlannedBudget() * 100)
         );
     }
 

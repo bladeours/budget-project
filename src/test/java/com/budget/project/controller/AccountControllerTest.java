@@ -221,7 +221,7 @@ public class AccountControllerTest {
     void shouldRemoveAccount_whenGetProperInput() {
         login(USER_1, authService);
         Account accountTo = accountService.createAccount(getAccountInput("test"));
-        Account accountFrom = accountService.createAccount(getAccountInput("test"));
+        Account accountFrom = accountService.createAccount(getAccountInput("test2"));
         Transaction transaction = transactionService.createTransaction(
                 getTransactionInputTransfer(accountTo.getHash(), accountFrom.getHash()));
         // language=GraphQL

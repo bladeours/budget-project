@@ -103,7 +103,7 @@ public class TransactionControllerTest {
         login(USER_1, authService);
         Account accountTo = accountService.createAccount(getAccountInput(""));
         Double accountToBalance = accountTo.getBalance();
-        Account accountFrom = accountService.createAccount(getAccountInput(""));
+        Account accountFrom = accountService.createAccount(getAccountInput("2"));
         Double accountFromBalance = accountFrom.getBalance();
         // language=GraphQL
         String mutation =
@@ -379,7 +379,7 @@ public class TransactionControllerTest {
     void shouldRemoveTransaction_whenGetProperInput() {
         login(USER_1, authService);
         Account accountFrom = accountService.createAccount(getAccountInput("essa"));
-        Account accountTo = accountService.createAccount(getAccountInput("essa"));
+        Account accountTo = accountService.createAccount(getAccountInput("essa2"));
         Transaction expectedTransaction = transactionService.createTransaction(
                 getTransactionInputTransfer(accountTo.getHash(), accountFrom.getHash()));
 
@@ -409,7 +409,7 @@ public class TransactionControllerTest {
     void shouldUpdateExpenseTransaction_whenTypeNotChange() {
         login(USER_1, authService);
         Account oldAccountFrom = accountService.createAccount(getAccountInput("essa"));
-        Account newAccountFrom = accountService.createAccount(getAccountInput("essa"));
+        Account newAccountFrom = accountService.createAccount(getAccountInput("essa2"));
         Category category = categoryService.createCategory(getCategoryInput(false));
         Transaction transactionBefore = transactionService.createTransaction(
                 getTransactionInputExpense(category.getHash(), oldAccountFrom.getHash()));
@@ -459,7 +459,7 @@ public class TransactionControllerTest {
     void shouldUpdateExpenseTransaction_whenTypeChange() {
         login(USER_1, authService);
         Account oldAccountFrom = accountService.createAccount(getAccountInput("essa"));
-        Account newAccountTo = accountService.createAccount(getAccountInput("essa"));
+        Account newAccountTo = accountService.createAccount(getAccountInput("essa2"));
         Category category = categoryService.createCategory(getCategoryInput(false));
         Category categoryIncome = categoryService.createCategory(getCategoryInput(true));
         Transaction transactionBefore = transactionService.createTransaction(

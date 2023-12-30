@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -87,14 +88,8 @@ public class AccountService {
     @SneakyThrows
     public void deleteAccount(String hash, Boolean removeSub) {
         Account account = this.getAccount(hash);
-        for (Account child : account.getSubAccounts()) {
-            if (removeSub) {
-                deleteAccount(child.getHash(), false);
-            } else {
-                child.setParent(null);
-            }
-        }
-        for (Transaction transaction : account.getTransactions()) {
+        List<Transaction> tempTransactions = new ArrayList<>(account.getTransactions());
+        for (Transaction transaction : tempTransactions) {
             transactionService.deleteTransaction(transaction);
         }
         userService.getLoggedUser().getAccounts().remove(account);
@@ -113,12 +108,6 @@ public class AccountService {
                 .currency(accountInput.currency())
                 .build();
         return accountRepository.save(account);
-    }
-
-    private boolean parentChanged(String parentHash, Account account) {
-        return (Objects.isNull(parentHash) && Objects.nonNull(account.getParent()))
-                || (Objects.nonNull(account.getParent())
-                        && !parentHash.equals(account.getParent().getHash()));
     }
 
     public List<Account> getTopAccounts() {

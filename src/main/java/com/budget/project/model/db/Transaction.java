@@ -6,6 +6,8 @@ import com.budget.project.utils.DateUtils;
 import jakarta.persistence.*;
 
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -38,10 +40,12 @@ public class Transaction {
     private String hash;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "account_to_id")
     private Account accountTo;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "account_from_id")
     private Account accountFrom;
 

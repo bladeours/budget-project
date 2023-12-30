@@ -39,7 +39,9 @@ public class AuthController {
 
     @MutationMapping
     public JwtResponse register(@Argument AuthInput authInput) {
-        return authService.register(authInput);
+        var response = authService.register(authInput);
+        httpServletResponse.addCookie(refreshTokenService.createRefreshTokenCookieAndRemoveOld());
+        return response;
     }
 
     @MutationMapping

@@ -51,6 +51,10 @@ public class AuthService {
                 .accounts(new HashSet<>())
                 .build();
         userRepository.save(user);
+
+        var auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        SecurityContextHolder.getContext().setAuthentication(auth);
         var jwtToken = jwtService.generateToken(user);
         return new JwtResponse(jwtToken);
     }

@@ -356,7 +356,7 @@ public class TransactionService {
                 }
             }
         }
-        return transaction;
+        return transactionRepository.save(transaction);
     }
 
     public List<TransactionCategoryNameSum> sumTransactionAmountForCategoriesName(

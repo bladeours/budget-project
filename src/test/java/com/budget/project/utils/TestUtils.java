@@ -20,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 public class TestUtils {
@@ -117,7 +118,7 @@ public class TestUtils {
                 .income(income)
                 .subCategories(List.of())
                 .color("33")
-                .name("name")
+                .name(UUID.randomUUID().toString())
                 .build();
     }
 

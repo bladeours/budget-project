@@ -5,28 +5,29 @@ logging:
 
 spring:
   datasource:
-    url: jdbc:h2:file:./localdb;AUTO_SERVER=TRUE
-    username: sa
-    password: password
-    # driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/budgetDB
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate.ddl-auto: create
-    show-sql: true
+    show-sql: false
     properties:
-      hibernate.format_sql: true
-    # database: postgresql
-    database-platform: org.hibernate.dialect.H2Dialect
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 jwt:
   cookie: jwt
   signing.key: 4aecd426ba172ab96f93649c37f17572abfb4d1ed7120252f5228d66c1a1d951
   # 1000 * 60 * 100 = 100min
-  # expiration: 15000
   expiration: 6000000
   refresh:
-    #1000 * 60 * 1000 = 1000min
     expiration: 60000000
     cookie: jwt-refresh
 
 logging.level:
   com.budget.project: DEBUG
 spring.graphql.graphiql.enabled: true
+
+cors:
+  origins: http://localhost

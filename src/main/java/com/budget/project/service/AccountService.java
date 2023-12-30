@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +37,10 @@ public class AccountService {
 
     @SneakyThrows
     public Account createAccount(AccountInput accountInput) {
-        if(this.getAccountByName(accountInput.name()).isPresent()){
+        if (this.getAccountByName(accountInput.name()).isPresent()) {
             log.warn("There can not be two accounts with the same name: {}", accountInput.name());
-            throw new AppException("There can not be two accounts with the same name", HttpStatus.BAD_REQUEST);
+            throw new AppException(
+                    "There can not be two accounts with the same name", HttpStatus.BAD_REQUEST);
         }
         Account account = Account.of(accountInput, userService.getLoggedUser());
         account = accountRepository.save(account);
@@ -80,8 +80,8 @@ public class AccountService {
 
     @SneakyThrows
     public Optional<Account> getAccountByName(String name) {
-        return accountRepository
-                .findByNameAndUsersContainingIgnoreCase(name, userService.getLoggedUser());
+        return accountRepository.findByNameAndUsersContainingIgnoreCase(
+                name, userService.getLoggedUser());
     }
 
     @SneakyThrows

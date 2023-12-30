@@ -31,7 +31,7 @@ public class securityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationRequest -> authorizationRequest
-                        .requestMatchers("/import")
+                        .requestMatchers("/import", "/onemoney")
                         .authenticated()
                         .requestMatchers("/graphiql", "/vendor/**", "/graphql")
                         .permitAll())

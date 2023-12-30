@@ -51,6 +51,11 @@ public class CategoryService {
 
     public Category createCategory(CategoryInput categoryInput) {
         Category category;
+        if (getCategoryByNameAndIncome(categoryInput.name(), categoryInput.income())
+                .isPresent()) {
+            log.warn("there is category with name: {}", categoryInput.name());
+            throw new AppException("bad category name", HttpStatus.BAD_REQUEST);
+        }
         category = Category.of(categoryInput, userService.getLoggedUser());
         category = categoryRepository.save(category);
         for (SubCategoryInput subCategoryInput : categoryInput.subCategories()) {
@@ -151,8 +156,9 @@ public class CategoryService {
                             "can't find subCategory with hash: " + hash, HttpStatus.NOT_FOUND);
                 });
     }
-    public Optional<Category> getCategoryByName(String name) {
-        return categoryRepository
-                .findCategoryByHashAndUsersContainingIgnoreCase(name, userService.getLoggedUser());
+
+    public Optional<Category> getCategoryByNameAndIncome(String name, Boolean income) {
+        return categoryRepository.findCategoryByNameAndUsersContainingIgnoreCaseAndIncome(
+                name, userService.getLoggedUser(), income);
     }
 }

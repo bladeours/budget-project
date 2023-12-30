@@ -1,5 +1,11 @@
 package com.budget.project.controller;
 
+import static com.budget.project.utils.TestUtils.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.budget.project.auth.service.AuthService;
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.Account;
@@ -8,13 +14,14 @@ import com.budget.project.model.db.Category;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.BudgetDto;
 import com.budget.project.model.dto.request.input.BudgetInput;
-import com.budget.project.service.PlannedIncomeService;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.BudgetService;
 import com.budget.project.service.CategoryService;
 import com.budget.project.service.TransactionService;
 import com.budget.project.utils.TestUtils;
+
 import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +35,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.List;
-
-import static com.budget.project.utils.TestUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @AutoConfigureGraphQlTester
 @SpringBootTest
@@ -91,12 +93,11 @@ public class BudgetControllerTest {
 
         Budget actualBudget = budgetService.getBudget(budget.getHash());
 
-
         assertAll(
-                () -> assertThat(actualBudget.getPlannedBudget()).isEqualTo(budgetInput.plannedBudget()),
+                () -> assertThat(actualBudget.getPlannedBudget())
+                        .isEqualTo(budgetInput.plannedBudget()),
                 () -> assertThat(actualBudget.getCategory()).isEqualTo(category),
-                () -> assertThat(actualBudget.getDate()).isEqualTo(YearMonth.of(2023, 11))
-        );
+                () -> assertThat(actualBudget.getDate()).isEqualTo(YearMonth.of(2023, 11)));
     }
 
     @Test
@@ -106,10 +107,10 @@ public class BudgetControllerTest {
         Category category2 = categoryService.createCategory(getCategoryInput(false));
         Category category3 = categoryService.createCategory(getCategoryInput(false));
         Account account = accountService.createAccount(getAccountInput("account"));
-        Transaction transaction = transactionService.createTransaction(getTransactionInputExpense(category1.getHash(), account.getHash()));
+        Transaction transaction = transactionService.createTransaction(
+                getTransactionInputExpense(category1.getHash(), account.getHash()));
         Budget budget1 = budgetService.createBudget(getBudgetInput(category1.getHash()));
         Budget budget2 = budgetService.createBudget(getBudgetInput(category2.getHash()));
-
 
         // language=GraphQL
         String query =
@@ -117,7 +118,7 @@ public class BudgetControllerTest {
                             query ($date: String!) {
                                 getBudgets(date: $date){
                                     budget {
-                                    hash                                
+                                    hash
                         }
                         left
                         percent
@@ -131,22 +132,23 @@ public class BudgetControllerTest {
                 .execute()
                 .path("data.getBudgets");
 
-        List<BudgetDto> budgetDtoList = budgetService.getBudgetDtoList(OffsetDateTime.now().toString());
-
+        List<BudgetDto> budgetDtoList =
+                budgetService.getBudgetDtoList(OffsetDateTime.now().toString());
 
         assertAll(
                 () -> assertThat(budgetDtoList.size()).isEqualTo(3),
                 () -> assertThat(budgetDtoList.stream()
-                        .filter(b -> b.budget().getHash().equals(budget1.getHash()))
-                        .findFirst()
-                        .get()
-                        .left()).isEqualTo(budget1.getPlannedBudget() - transaction.getAmount()),
+                                .filter(b -> b.budget().getHash().equals(budget1.getHash()))
+                                .findFirst()
+                                .get()
+                                .left())
+                        .isEqualTo(budget1.getPlannedBudget() - transaction.getAmount()),
                 () -> assertThat(budgetDtoList.stream()
-                        .filter(b -> b.budget().getHash().equals(budget1.getHash()))
-                        .findFirst()
-                        .get()
-                        .percent()).isEqualTo(transaction.getAmount() / budget1.getPlannedBudget() * 100)
-        );
+                                .filter(b -> b.budget().getHash().equals(budget1.getHash()))
+                                .findFirst()
+                                .get()
+                                .percent())
+                        .isEqualTo(transaction.getAmount() / budget1.getPlannedBudget() * 100));
     }
 
     @Test
@@ -191,10 +193,7 @@ public class BudgetControllerTest {
                         }
                         """;
 
-        graphQlTester
-                .document(mutation)
-                .variable("hash", budget.getHash())
-                .execute();
+        graphQlTester.document(mutation).variable("hash", budget.getHash()).execute();
 
         assertThrows(AppException.class, () -> budgetService.getBudget(budget.getHash()));
     }

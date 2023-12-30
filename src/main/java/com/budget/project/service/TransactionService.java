@@ -252,7 +252,7 @@ public class TransactionService {
 
         if (category.getIncome()) {
             log.warn("category is not for \"expense\"");
-            throw new AppException("incorrect category", HttpStatus.BAD_REQUEST);
+            throw new AppException("incorrect category:", HttpStatus.BAD_REQUEST);
         }
         SubCategory subCategory = getSubCategory(transactionInput.subCategoryHash(), category);
 

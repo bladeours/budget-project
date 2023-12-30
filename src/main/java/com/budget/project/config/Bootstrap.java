@@ -7,7 +7,6 @@ import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.SubCategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
-import com.budget.project.service.PlannedIncomeService;
 import com.budget.project.service.AccountService;
 import com.budget.project.service.CategoryService;
 import com.budget.project.service.TransactionService;
@@ -29,7 +28,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Profile("local")
+@Profile("locals")
 public class Bootstrap implements ApplicationRunner {
 
     private final AuthService authService;
@@ -200,8 +199,6 @@ public class Bootstrap implements ApplicationRunner {
                 .currency(Currency.PLN)
                 .name("transaction_3")
                 .build());
-
-
 
         for (int i = 0; i < 50; i++) {
             transactionService.createTransaction(TransactionInput.builder()

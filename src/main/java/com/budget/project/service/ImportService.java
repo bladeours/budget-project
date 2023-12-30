@@ -1,14 +1,19 @@
 package com.budget.project.service;
 
+import static com.budget.project.utils.CSVUtils.*;
+
 import com.budget.project.model.db.*;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.model.dto.request.input.CategoryInput;
 import com.budget.project.model.dto.request.input.TransactionInput;
 import com.budget.project.utils.DateUtils;
+
 import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
@@ -21,9 +26,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Optional;
-
-import static com.budget.project.utils.CSVUtils.*;
 
 @Slf4j
 @Service
@@ -35,7 +37,6 @@ public class ImportService {
     private final TransactionService transactionService;
     private final CategoryService categoryService;
     private final OneMoneyService oneMoneyService;
-
 
     @SneakyThrows
     public void importCSV(MultipartFile file) {
@@ -78,13 +79,15 @@ public class ImportService {
             case EXPENSE -> transactionInputBuilder =
                     handleExpense(transactionInputBuilder, record);
             case INCOME -> transactionInputBuilder = handleIncome(transactionInputBuilder, record);
-            case TRANSFER -> transactionInputBuilder = handleTransfer(transactionInputBuilder, record);
+            case TRANSFER -> transactionInputBuilder =
+                    handleTransfer(transactionInputBuilder, record);
         }
 
         transactionService.createTransaction(transactionInputBuilder.build());
     }
 
-    private TransactionInput.TransactionInputBuilder handleTransfer(TransactionInput.TransactionInputBuilder builder, CSVRecord record) {
+    private TransactionInput.TransactionInputBuilder handleTransfer(
+            TransactionInput.TransactionInputBuilder builder, CSVRecord record) {
         Account accountFrom = getAccount(record.get(FROM_ACCOUNT_CATEGORY_HEADER));
         Account accountTo = getAccount(record.get(TO_ACCOUNT_CATEGORY_HEADER));
         return builder.accountFromHash(accountFrom.getHash()).accountToHash(accountTo.getHash());
@@ -116,28 +119,30 @@ public class ImportService {
             builder.accountFromHash(account.getHash());
         }
 
-        Category category = categoryService.getCategoryByName(record.get(categoryHeader)).orElse(categoryService.createCategory(CategoryInput.builder()
-                .name(record.get(categoryHeader))
-                .income(income)
-                .subCategories(new ArrayList<>())
-                .color("#CCFF1A")
-                .build()));
-
+        Category category = categoryService
+                .getCategoryByNameAndIncome(record.get(categoryHeader), income)
+                .orElseGet(() -> categoryService.createCategory(CategoryInput.builder()
+                        .name(record.get(categoryHeader))
+                        .income(income)
+                        .subCategories(new ArrayList<>())
+                        .color("#CCFF1A")
+                        .build()));
 
         return builder.categoryHash(category.getHash());
     }
 
     private Account getAccount(String name) {
-        return accountService.getAccountByName(name).orElseGet(() -> accountService.createAccount(AccountInput.builder()
-                .accountType(AccountType.REGULAR)
-                .balance(0D)
-                .description("")
-                .color("#CCFF1A")
-                .archived(false)
-                .currency(Currency.PLN)
-                .name(name)
-                .build()));
-
+        return accountService
+                .getAccountByName(name)
+                .orElseGet(() -> accountService.createAccount(AccountInput.builder()
+                        .accountType(AccountType.REGULAR)
+                        .balance(0D)
+                        .description("")
+                        .color("#CCFF1A")
+                        .archived(false)
+                        .currency(Currency.PLN)
+                        .name(name)
+                        .build()));
     }
 
     public void importFromOneMoney(MultipartFile file) {

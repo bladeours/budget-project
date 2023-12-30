@@ -5,7 +5,6 @@ import static com.budget.project.utils.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
 import static org.springframework.graphql.execution.ErrorType.NOT_FOUND;
 
 import com.budget.project.auth.service.AuthService;
@@ -14,7 +13,6 @@ import com.budget.project.model.db.Account;
 import com.budget.project.model.db.Transaction;
 import com.budget.project.model.dto.request.input.AccountInput;
 import com.budget.project.service.AccountService;
-import com.budget.project.service.PlannedIncomeService;
 import com.budget.project.service.TransactionService;
 import com.budget.project.utils.TestUtils;
 

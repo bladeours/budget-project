@@ -1,7 +1,9 @@
 package com.budget.project.model.db;
 
 import com.budget.project.model.dto.request.input.CategoryInput;
+
 import jakarta.persistence.*;
+
 import lombok.*;
 
 import java.util.HashSet;
@@ -59,5 +61,4 @@ public class Category {
                 .budgets(new HashSet<>())
                 .build();
     }
-
 }

@@ -21,6 +21,7 @@ public class FileUploadController {
         importService.importCSV(file);
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }
+
     @PostMapping("/onemoney")
     public ResponseEntity<String> importFromOneMoney(@RequestParam("file") MultipartFile file) {
         importService.importFromOneMoney(file);

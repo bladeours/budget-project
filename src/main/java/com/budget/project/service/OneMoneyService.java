@@ -1,10 +1,14 @@
 package com.budget.project.service;
 
+import static com.budget.project.utils.CSVUtils.*;
+
 import com.budget.project.exception.AppException;
 import com.budget.project.model.db.TransactionType;
+
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -16,8 +20,6 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
-
-import static com.budget.project.utils.CSVUtils.*;
 
 @Service
 @Slf4j
@@ -38,8 +40,19 @@ public class OneMoneyService {
 
         Reader reader = new InputStreamReader(file.getInputStream());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT
-                .withHeader("DATE","TYPE","FROM ACCOUNT","TO ACCOUNT / TO CATEGORY","AMOUNT","CURRENCY","AMOUNT 2","CURRENCY 2","TAGS","NOTES")
-                .withSkipHeaderRecord().withAllowMissingColumnNames(true)
+                .withHeader(
+                        "DATE",
+                        "TYPE",
+                        "FROM ACCOUNT",
+                        "TO ACCOUNT / TO CATEGORY",
+                        "AMOUNT",
+                        "CURRENCY",
+                        "AMOUNT 2",
+                        "CURRENCY 2",
+                        "TAGS",
+                        "NOTES")
+                .withSkipHeaderRecord()
+                .withAllowMissingColumnNames(true)
                 .parse(reader);
         try (final CSVPrinter printer = new CSVPrinter(sw, csvFormat)) {
             records.forEach((record) -> {
@@ -62,26 +75,25 @@ public class OneMoneyService {
                 getToAccountOrCategory(record),
                 record.get("AMOUNT"),
                 record.get("NOTES"),
-                "true"
-        );
+                "true");
     }
 
     private String getToAccountOrCategory(CSVRecord record) {
-        switch (TransactionType.valueOf(record.get("TYPE").toUpperCase())){
+        switch (TransactionType.valueOf(record.get("TYPE").toUpperCase())) {
             case INCOME -> {
                 return record.get("FROM ACCOUNT");
             }
             case EXPENSE, TRANSFER -> {
-                return record.get("TO ACCOUNT / TO CATEGORY");
+                return transformCategory(record.get("TO ACCOUNT / TO CATEGORY"));
             }
             default -> throw new AppException("bad type", HttpStatus.BAD_REQUEST);
         }
     }
 
     private String getFromAccountOrCategory(CSVRecord record) {
-        switch (TransactionType.valueOf(record.get("TYPE").toUpperCase())){
+        switch (TransactionType.valueOf(record.get("TYPE").toUpperCase())) {
             case INCOME -> {
-                return record.get("TO ACCOUNT / TO CATEGORY");
+                return transformCategory(record.get("TO ACCOUNT / TO CATEGORY"));
             }
             case EXPENSE, TRANSFER -> {
                 return record.get("FROM ACCOUNT");
@@ -91,7 +103,7 @@ public class OneMoneyService {
     }
 
     private String transformDate(String date) {
-        SimpleDateFormat fromOneMoney = new SimpleDateFormat("dd/MM/yy");
+        SimpleDateFormat fromOneMoney = new SimpleDateFormat("MM/dd/yy");
         SimpleDateFormat myFormat = new SimpleDateFormat("dd/MM/yyyy");
         try {
             return myFormat.format(fromOneMoney.parse(date));
@@ -101,5 +113,10 @@ public class OneMoneyService {
         }
     }
 
-
+    private String transformCategory(String categoryName){
+        if(categoryName.indexOf("(") > 0) {
+            return categoryName.substring(0, categoryName.indexOf("(") - 1);
+        }
+        return categoryName;
+    }
 }

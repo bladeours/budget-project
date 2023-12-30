@@ -1,12 +1,14 @@
 package com.budget.project.service;
 
 import static com.budget.project.utils.TestUtils.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.budget.project.auth.service.AuthService;
+
 import jakarta.transaction.Transactional;
-import org.checkerframework.checker.units.qual.A;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +28,16 @@ import java.io.InputStream;
 class ImportServiceTest {
     @Autowired
     private ImportService importService;
+
     @Autowired
     private AuthService authService;
+
     @Autowired
     private AccountService accountService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
     @BeforeEach
     void setUp() {
         registerUsers(authService, authenticationManager);
@@ -47,10 +52,24 @@ class ImportServiceTest {
         importService.importCSV(file);
 
         assertAll(
-                () -> assertThat(accountService.getAccountByName("Santander").get().getTransactions().size()).isEqualTo(4),
-                () -> assertThat(accountService.getAccountByName("mBank").get().getTransactions().size()).isEqualTo(3),
-                () -> assertThat(accountService.getAccountByName("alior").get().getTransactions().size()).isEqualTo(1)
-        );
+                () -> assertThat(accountService
+                                .getAccountByName("Santander")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(4),
+                () -> assertThat(accountService
+                                .getAccountByName("mBank")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(3),
+                () -> assertThat(accountService
+                                .getAccountByName("alior")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(1));
     }
 
     @Test
@@ -62,11 +81,35 @@ class ImportServiceTest {
         importService.importFromOneMoney(file);
 
         assertAll(
-                () -> assertThat(accountService.getAccountByName("Jakdojade").get().getTransactions().size()).isEqualTo(1),
-                () -> assertThat(accountService.getAccountByName("Santander").get().getTransactions().size()).isEqualTo(3),
-                () -> assertThat(accountService.getAccountByName("Koleo").get().getTransactions().size()).isEqualTo(2),
-                () -> assertThat(accountService.getAccountByName("Rachunki").get().getTransactions().size()).isEqualTo(1),
-                () -> assertThat(accountService.getAccountByName("Kosmetyki & Chemia").get().getTransactions().size()).isEqualTo(1)
-        );
+                () -> assertThat(accountService
+                                .getAccountByName("Jakdojade")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(1),
+                () -> assertThat(accountService
+                                .getAccountByName("Santander")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(3),
+                () -> assertThat(accountService
+                                .getAccountByName("Koleo")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(2),
+                () -> assertThat(accountService
+                                .getAccountByName("Rachunki")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(1),
+                () -> assertThat(accountService
+                                .getAccountByName("Kosmetyki & Chemia")
+                                .get()
+                                .getTransactions()
+                                .size())
+                        .isEqualTo(1));
     }
 }

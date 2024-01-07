@@ -5,13 +5,13 @@ logging:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/budgetDB
+    url: jdbc:postgresql://localhost:5432/budget
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate.ddl-auto: create
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -30,4 +30,4 @@ logging.level:
 spring.graphql.graphiql.enabled: true
 
 cors:
-  origins: http://localhost
+  origins: http://localhost:4200

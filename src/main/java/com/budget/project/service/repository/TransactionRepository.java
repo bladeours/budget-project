@@ -31,22 +31,24 @@ public interface TransactionRepository
 
     @Query(
             "SELECT t.category.name as categoryName, sum(t.amount) as sumForCategory, t.category.color as categoryColor FROM Transaction t"
-                    + " where (:user MEMBER OF t.category.users) and (t.category.income = :income) and "
-                    + "(t.date between :startDate and :endDate)"
-                    + " group by t.category.name order by sum(t.amount)"
-                    + " desc ")
+                    + " WHERE (:user MEMBER OF t.category.users) AND (t.category.income = :income) AND "
+                    + "(t.date BETWEEN :startDate AND :endDate)"
+                    + " GROUP BY t.category.name, t.category.color ORDER BY sum(t.amount) DESC")
     List<TransactionCategoryNameSum> sumTransactionAmountForCategoriesNameAndUser(
             Boolean income, User user, LocalDateTime startDate, LocalDateTime endDate);
 
+
     List<Transaction> findAllByFutureTrue();
 
-    @Query("SELECT t.category as category, sum(t.amount) as sumForCategory FROM Transaction t"
-            + " where (:user MEMBER OF t.category.users) and "
-            + "(t.date between :startDate and :endDate)"
-            + " group by t.category.hash order by sum(t.amount)"
-            + " desc ")
+    @Query("SELECT c.id as id, c.archived as archived, c.color as color, c.hash as hash, c.income as income, c.name as name, sum(t.amount) as sumForCategory FROM Transaction t "
+            + "JOIN t.category c "
+            + "WHERE (:user MEMBER OF c.users) AND "
+            + "(t.date BETWEEN :startDate AND :endDate) "
+            + "GROUP BY c.id, c.archived, c.color, c.hash, c.income, c.name "
+            + "ORDER BY sum(t.amount) DESC")
     List<TransactionCategorySum> sumTransactionAmountForCategoriesAndUser(
             User user, LocalDateTime startDate, LocalDateTime endDate);
+
 
     @Query("SELECT sum(t.amount) FROM Transaction t"
             + " where (:user MEMBER OF t.category.users) and "
